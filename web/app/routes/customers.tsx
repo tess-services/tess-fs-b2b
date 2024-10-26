@@ -1,4 +1,4 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
+import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Form, useLoaderData } from "@remix-run/react";
 import { drizzle } from "drizzle-orm/d1";
 import { customerTable } from "~/db/schema";
