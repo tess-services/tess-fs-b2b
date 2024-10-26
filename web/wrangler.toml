@@ -12,7 +12,7 @@ mode = "smart"
 [[d1_databases]]
 binding = "DB"
 database_name = "invoice002-db"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+database_id = "895f3ccf-bb50-45ef-8e98-294b8e6a863a"
 preview_database_id = "LOCAL-INVOICE-001-DB" # Required for Pages local development
 migrations_dir = "migrations"
 
@@ -22,6 +22,7 @@ migrations_dir = "migrations"
 binding = "DB"
 database_name = "invoice002-db"
 database_id = "895f3ccf-bb50-45ef-8e98-294b8e6a863a"
+migrations_dir = "migrations"
 
 [env.production.vars]
 
