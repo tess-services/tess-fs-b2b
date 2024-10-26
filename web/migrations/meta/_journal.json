@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1729797508542,
+      "tag": "0000_fine_violations",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1729896624659,
+      "tag": "0001_curly_warlock",
+      "breakpoints": true
+    }
+  ]
+}

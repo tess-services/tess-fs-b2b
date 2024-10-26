@@ -1,0 +1,1 @@
+ALTER TABLE `customers` ADD `is_commercial` integer DEFAULT false;

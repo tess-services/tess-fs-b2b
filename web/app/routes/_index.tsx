@@ -1,5 +1,5 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
-import { Button } from "~/components/ui/button";
+import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -18,12 +18,12 @@ export default function Index() {
           </h1>
           <div className="h-[144px] w-[434px]">
             <img
-              src="/logo-light.png"
+              src="/assets/logo-light.png"
               alt="Remix"
               className="block w-full dark:hidden"
             />
             <img
-              src="/logo-dark.png"
+              src="/assets/logo-dark.png"
               alt="Remix"
               className="hidden w-full dark:block"
             />
@@ -33,7 +33,7 @@ export default function Index() {
           <p className="leading-6 text-gray-700 dark:text-gray-200">
             What&apos;s next?
           </p>
-          <Button onClick={() => console.log("clicked")}>Click me</Button>
+          <Link to="/customers">Click me</Link>
           <ul>
             {resources.map(({ href, text, icon }) => (
               <li key={href}>

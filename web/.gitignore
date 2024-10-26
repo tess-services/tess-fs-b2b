@@ -6,3 +6,21 @@ node_modules
 .dev.vars
 
 .wrangler
+
+# prod
+dist/
+
+# dev
+.hono/
+.wrangler/
+.yarn/
+!.yarn/releases
+.vscode/*
+!.vscode/launch.json
+!.vscode/*.code-snippets
+.idea/workspace.xml
+.idea/usage.statistics.xml
+.idea/shelf
+
+drizzle/migrations/*
+!drizzle/migrations/.gitkeep
