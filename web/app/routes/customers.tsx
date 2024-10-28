@@ -1,11 +1,13 @@
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Form, useLoaderData } from "@remix-run/react";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { customerTable } from "~/db/schema";
+import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
+import { account, customerTable, user } from "~/db/schema";
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const db = drizzle(context.cloudflare.env.DB);
-  const customers = (await db.select().from(customerTable));
+  const customers = (await db.select().from(user).innerJoin(account, eq(user.id, account.userId)).all())
 
   return json({ customers });
 }
@@ -32,11 +34,16 @@ export default function Customers() {
   return (
     <div>
       <h1>Customers</h1>
-      <ul>
-        {customers.map((customer) => (
-          <li key={customer.id}>{customer.name}</li>
-        ))}
-      </ul>
+      <Table style={{ backgroundColor: "#f9f9f9", color: "#333" }}>
+        <TableBody>
+          {customers.map((customer) => (
+            <TableRow key={customer.user.id} style={{ borderBottom: "1px solid #ddd" }}>
+              <TableCell style={{ padding: "8px", color: "#333" }}>{customer.user.name}</TableCell>
+              <TableCell style={{ padding: "8px", color: "#333" }}>{customer.account.userId}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
       <Form method="post">
         <label htmlFor="name">Name:</label>
         <input id="name" type="text" name="name" />

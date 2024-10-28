@@ -5,6 +5,13 @@ declare global {
       ACCOUNT_ID: string;
       DATABASE_TOKEN: string;
     }
+
+  }
+  // Extend the Window interface to include ENV
+  interface Window {
+    ENV: {
+      BETTER_AUTH_URL: string;
+    };
   }
 }
 

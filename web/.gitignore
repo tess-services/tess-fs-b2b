@@ -24,5 +24,3 @@ dist/
 
 drizzle/migrations/*
 !drizzle/migrations/.gitkeep
-
-.dev.env
