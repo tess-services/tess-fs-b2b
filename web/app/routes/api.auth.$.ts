@@ -1,4 +1,4 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Bindings } from "server";
 import { initAuth } from '~/lib/auth.server'; // Adjust the path as necessary
 

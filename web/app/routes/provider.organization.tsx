@@ -1,4 +1,4 @@
-import { json, type ActionFunction, type LoaderFunction } from "@remix-run/node";
+import { json, type ActionFunction, type LoaderFunction } from "@remix-run/cloudflare";
 import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { organizationTable, userOrganizationTable } from "~/db/schema";
