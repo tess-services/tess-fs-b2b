@@ -10,12 +10,14 @@ export const authMiddleware = createMiddleware(async (c, next) => {
   if (!session) {
     c.set("user", null);
     c.set("session", null);
+
     return await next();
   }
 
   c.set("user", session.user);
   c.set("session", session.session);
   c.set("db", drizzle(c.env.DB));
+
   return await next();
 });
 
@@ -24,11 +26,8 @@ export const providerAuthMiddleware = createMiddleware(async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
   if (!session) {
-    console.log("No session found, redirecting to /signin");
     return c.redirect("/signin");
   }
-
-  console.log("Session found, continuing to next middleware", session);
 
   return await next();
 });

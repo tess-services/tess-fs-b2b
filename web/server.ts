@@ -57,7 +57,8 @@ app.use(
         getLoadContext(c) {
           return {
             cloudflare: {
-              env: c.env
+              env: c.env,
+              var: c.var
             }
           }
         }
