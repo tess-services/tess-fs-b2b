@@ -104,5 +104,9 @@
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "browser": {
+    "crypto": false,
+    "stream": false
   }
 }
