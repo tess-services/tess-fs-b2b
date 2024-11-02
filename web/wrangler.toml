@@ -25,4 +25,5 @@ database_id = "895f3ccf-bb50-45ef-8e98-294b8e6a863a"
 migrations_dir = "migrations"
 
 [env.production.vars]
-
+BETTER_AUTH_TRUSTED_ORIGINS = "https://tess-fs.pages.dev/"
+BETTER_AUTH_URL = "https://tess-fs.pages.dev"
