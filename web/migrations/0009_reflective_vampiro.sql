@@ -1,0 +1,2 @@
+ALTER TABLE `organization` ADD `updated_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL;--> statement-breakpoint
+ALTER TABLE `user_profile` ADD `updated_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL;

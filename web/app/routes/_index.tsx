@@ -33,7 +33,7 @@ export default function Index() {
           <p className="leading-6 text-gray-700 dark:text-gray-200">
             What&apos;s next?
           </p>
-          <Link to="/customers">Click me</Link>
+          <Link to="/provider/customers">Click me</Link>
           <ul>
             {resources.map(({ href, text, icon }) => (
               <li key={href}>

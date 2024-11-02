@@ -16,3 +16,17 @@ export const authMiddleware = createMiddleware(async (c, next) => {
   c.set("session", session.session);
   return await next();
 });
+
+export const providerAuthMiddleware = createMiddleware(async (c, next) => {
+  const auth: Auth = initAuth(c.env);
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+
+  if (!session) {
+    console.log("No session found, redirecting to /signin");
+    return c.redirect("/signin");
+  }
+
+  console.log("Session found, continuing to next middleware", session);
+
+  return await next();
+});

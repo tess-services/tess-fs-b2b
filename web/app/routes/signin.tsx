@@ -20,7 +20,7 @@ export default function SignInForm() {
           // show loading state
         },
         onSuccess: (ctx) => {
-          navigate("/customers")
+          navigate("/provider/customers")
         },
         onError: (ctx) => {
           alert(JSON.stringify(ctx.error, null, 2))
@@ -36,7 +36,6 @@ export default function SignInForm() {
   return (
     // <div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-gray-50 py-6 sm:py-12">
     <div className="flex h-screen w-full items-center justify-center px-4">
-
       <EmptyGridBackground />
 
       <Card className="relative mx-auto max-w-sm">
@@ -87,9 +86,5 @@ export default function SignInForm() {
           </form>
         </CardContent>
       </Card>
-
-    </div>
-
-
-  )
+    </div>)
 }

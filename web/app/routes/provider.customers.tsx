@@ -2,6 +2,7 @@ import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudfl
 import { Form, useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
+import { SignOut } from "~/components/sign-out";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
 import { account, customerTable, user } from "~/db/schema";
 
@@ -32,14 +33,15 @@ export default function Customers() {
   const { customers } = useLoaderData<typeof loader>();
 
   return (
-    <div>
+    <div className="rounded-lg shadow-md p-4 sm:p-6 md:p-8 lg:p-10">
+      <SignOut />
       <h1>Customers</h1>
-      <Table style={{ backgroundColor: "#f9f9f9", color: "#333" }}>
+      <Table>
         <TableBody>
           {customers.map((customer) => (
-            <TableRow key={customer.user.id} style={{ borderBottom: "1px solid #ddd" }}>
-              <TableCell style={{ padding: "8px", color: "#333" }}>{customer.user.name}</TableCell>
-              <TableCell style={{ padding: "8px", color: "#333" }}>{customer.account.userId}</TableCell>
+            <TableRow key={customer.user.id}>
+              <TableCell>{customer.user.name}</TableCell>
+              <TableCell>{customer.account.userId}</TableCell>
             </TableRow>
           ))}
         </TableBody>

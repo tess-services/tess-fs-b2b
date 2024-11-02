@@ -1,7 +1,7 @@
 import type { AppLoadContext, RequestHandler, ServerBuild } from '@remix-run/cloudflare';
 import { logDevReady } from "@remix-run/cloudflare";
 import { initAuth } from "app/lib/auth.server";
-import { authMiddleware } from 'AuthMiddleware';
+import { authMiddleware, providerAuthMiddleware } from 'AuthMiddleware';
 import type { Auth, Session, User } from "better-auth";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { Hono } from "hono";
@@ -33,6 +33,19 @@ let handler: RequestHandler | undefined
 app.use(poweredBy())
 app.get('/hono', (c) => c.text('Hono, ' + c.env.BETTER_AUTH_URL))
 
+// NOTE: Sequence of using middleware is important
+app.use(authMiddleware);
+
+app.use("/provider", providerAuthMiddleware);
+
+app.use("/provider/**", providerAuthMiddleware);
+
+app.on(["POST", "GET"], "/api/auth/**", (c) => {
+  const auth: Auth = initAuth(c.env);
+  return auth.handler(c.req.raw);
+});
+
+
 app.use(
   async (c, next) => {
     if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
@@ -40,7 +53,6 @@ app.use(
     }
     await next()
   },
-  authMiddleware,
   async (c, next) => {
     if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
       const serverBuild = await import('./build/server')
@@ -84,9 +96,5 @@ app.use(
   }
 )
 
-app.on(["POST", "GET"], "/api/auth/**", (c) => {
-  const auth: Auth = initAuth(c.env as Bindings);
-  return auth.handler(c.req.raw);
-});
 
 export default app

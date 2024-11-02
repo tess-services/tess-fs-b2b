@@ -1,4 +1,4 @@
-import type { LinksFunction } from "@remix-run/cloudflare";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { json } from "@remix-run/cloudflare";
 import {
   Links,
@@ -8,7 +8,9 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
+import { themeSessionResolver } from "./sessions.server";
 
+import { ThemeProvider } from "remix-themes";
 import "./tailwind.css";
 
 export const links: LinksFunction = () => [
@@ -24,8 +26,11 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export async function loader() {
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { getTheme } = await themeSessionResolver(request)
+
   return json({
+    theme: getTheme(),
     ENV: {
       BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     },
@@ -45,6 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+
         {children}
         <ScrollRestoration />
         <script
@@ -61,5 +67,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const data = useLoaderData<typeof loader>()
+
+  return (
+    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
+
+      <Outlet />
+    </ThemeProvider>);
 }

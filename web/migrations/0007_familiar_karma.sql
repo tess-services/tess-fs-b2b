@@ -1,0 +1,1 @@
+ALTER TABLE `invoice_detail` ADD `updated_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL;

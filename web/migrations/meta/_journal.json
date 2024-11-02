@@ -36,6 +36,41 @@
       "when": 1730016359136,
       "tag": "0004_large_hellcat",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1730518015553,
+      "tag": "0005_small_sharon_carter",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1730518708694,
+      "tag": "0006_steep_natasha_romanoff",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1730518896293,
+      "tag": "0007_familiar_karma",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1730518933168,
+      "tag": "0008_opposite_electro",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1730519295714,
+      "tag": "0009_reflective_vampiro",
+      "breakpoints": true
     }
   ]
 }
