@@ -2,7 +2,6 @@ import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudfl
 import { Form, useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { SignOut } from "~/components/sign-out";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
 import { account, customerTable, user } from "~/db/schema";
 
@@ -34,7 +33,6 @@ export default function Customers() {
 
   return (
     <div className="rounded-lg shadow-md p-4 sm:p-6 md:p-8 lg:p-10">
-      <SignOut />
       <h1>Customers</h1>
       <Table>
         <TableBody>

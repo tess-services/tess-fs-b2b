@@ -14,8 +14,8 @@ export const SignOut = () => {
 
   return (
     <Button
-      className="gap-2 z-10"
-      variant="secondary"
+      className="p-0"
+      variant="ghost"
       onClick={async () => {
         setIsSignOut(true);
         await signOut();

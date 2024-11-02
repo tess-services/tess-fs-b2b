@@ -79,6 +79,7 @@ export const organizationTable = sqliteTable("organization", {
   tradeCurrency: text('trade_currency').notNull(), // Currency (e.g., USD)
   logoUrl: text('logo_url'),
   email: text("email").notNull(),
+
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`),
   updatedAt: integer("updated_at", { mode: "timestamp" }).default(
