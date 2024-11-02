@@ -1,5 +1,6 @@
 import { initAuth } from "app/lib/auth.server";
 import type { Auth } from "better-auth";
+import { drizzle } from "drizzle-orm/d1";
 import { createMiddleware } from "hono/factory";
 
 export const authMiddleware = createMiddleware(async (c, next) => {
@@ -14,6 +15,7 @@ export const authMiddleware = createMiddleware(async (c, next) => {
 
   c.set("user", session.user);
   c.set("session", session.session);
+  c.set("db", drizzle(c.env.DB));
   return await next();
 });
 

@@ -1,16 +1,23 @@
 import { type AppLoadContext } from "@remix-run/cloudflare";
+import { Session, User } from "better-auth";
+import { DrizzleD1Database } from "drizzle-orm/d1";
 import { type PlatformProxy } from "wrangler";
 
 interface Env {
   DB: D1Database;
 }
 
-type Cloudflare = Omit<PlatformProxy<Env>, "dispose">;
+type Cloudflare = Omit<PlatformProxy<Env>, "dispose"> & {
+  var: {
+    user: User | null;
+    session: Session | null;
+    db: DrizzleD1Database | null;
+  }
+};
 
 declare module "@remix-run/cloudflare" {
   interface AppLoadContext {
     cloudflare: Cloudflare;
-    extra: string; // augmented
   }
 }
 
@@ -25,6 +32,7 @@ export const getLoadContext: GetLoadContext = ({
 }) => {
   return {
     ...context,
-    extra: "stuff",
+    user: null,
+    session: null,
   };
 };

@@ -2,8 +2,7 @@ import type { AppLoadContext, RequestHandler, ServerBuild } from '@remix-run/clo
 import { logDevReady } from "@remix-run/cloudflare";
 import { initAuth } from "app/lib/auth.server";
 import { authMiddleware, providerAuthMiddleware } from 'AuthMiddleware';
-import type { Auth, Session, User } from "better-auth";
-import type { DrizzleD1Database } from "drizzle-orm/d1";
+import type { Auth } from "better-auth";
 import { Hono } from "hono";
 import { poweredBy } from 'hono/powered-by';
 import { staticAssets } from 'remix-hono/cloudflare';
@@ -16,15 +15,8 @@ export type Bindings = {
   BETTER_AUTH_TRUSTED_ORIGINS: string;
 };
 
-export type Variables = {
-  db: DrizzleD1Database;
-  user: User | null;
-  session: Session | null;
-};
-
 export type ContextEnv = {
   Bindings: Bindings;
-  Variables: Variables;
 };
 
 const app = new Hono<ContextEnv>();

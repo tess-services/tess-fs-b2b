@@ -7,8 +7,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "~/components/ui/navigation-menu"
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet"
 
+const isMenuActive = ({ isActive }: { isActive: boolean }) =>
+  `px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900'
+  }`
+
 export default function ProviderLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -27,12 +33,16 @@ export default function ProviderLayout() {
                   <NavLink
                     to="/provider/customers"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={({ isActive }) =>
-                      `px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900'
-                      }`
-                    }
+                    className={isMenuActive}
                   >
                     Customers
+                  </NavLink>
+                  <NavLink
+                    to="/provider/organization"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={isMenuActive}
+                  >
+                    Organization
                   </NavLink>
                   {/* Add more mobile menu items */}
                 </nav>
@@ -44,14 +54,19 @@ export default function ProviderLayout() {
                 <NavigationMenuItem>
                   <NavLink
                     to="/provider/customers"
-                    className={({ isActive }) =>
-                      `px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900'
-                      }`
+                    className={isMenuActive
                     }
                   >
                     Customers
                   </NavLink>
                 </NavigationMenuItem>
+                <NavLink
+                  to="/provider/organization"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={isMenuActive}
+                >
+                  Organization
+                </NavLink>
                 {/* Add more menu items as needed */}
               </NavigationMenuList>
             </NavigationMenu>

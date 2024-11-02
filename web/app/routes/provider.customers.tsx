@@ -1,21 +1,54 @@
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Form, useLoaderData } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/d1";
 import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
-import { account, customerTable, user } from "~/db/schema";
+import { customerTable, userOrganizationTable } from "~/db/schema";
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  const db = drizzle(context.cloudflare.env.DB);
-  const customers = (await db.select().from(user).innerJoin(account, eq(user.id, account.userId)).all())
+  const { db, user } = context.cloudflare.var;
 
-  return json({ customers });
+  if (!user || !db) {
+    console.log(user, db);
+    throw new Error("Unauthorized");
+  }
+
+  const organization = await db.select().from(userOrganizationTable)
+    .where(eq(userOrganizationTable.userId, user.id)).execute();
+
+  if (organization.length === 0) {
+    return json({ customers: [], organizationProfileSetupRequired: true });
+  }
+
+  const organizationId = organization[0].organizationId;
+
+  const customers = await db.select({
+    customer: customerTable,
+  }).from(customerTable)
+    .innerJoin(userOrganizationTable, eq(customerTable.organizationId, userOrganizationTable.organizationId))
+    .where(eq(userOrganizationTable.organizationId, organizationId))
+    .execute();
+
+  return json({ customers: customers.map(c => c.customer), organizationProfileSetupRequired: false });
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const db = drizzle(context.cloudflare.env.DB);
+  const { db, user } = context.cloudflare.var;
+
   const formData = await request.formData();
   const updates = Object.fromEntries(formData);
+
+  if (!user || !db) {
+    throw new Error("Unauthorized");
+  }
+  console.log(formData);
+  const organization = await db.select().from(userOrganizationTable)
+    .where(eq(userOrganizationTable.userId, user.id)).execute();
+
+  if (organization.length === 0) {
+    return json({ customers: [], organizationProfileSetupRequired: true });
+  }
+
+  const organizationId = organization[0].organizationId;
 
   await db.insert(customerTable).values({
     name: updates.name,
@@ -23,13 +56,24 @@ export async function action({ request, context }: ActionFunctionArgs) {
     address: updates.address,
     suburb: updates.suburb,
     phone: updates.phone,
+    organizationId,
+    addedByUserId: user.id,
   });
 
   return json({ message: "Customer added" }, { status: 201 });
 }
 
 export default function Customers() {
-  const { customers } = useLoaderData<typeof loader>();
+  const { customers, organizationProfileSetupRequired } = useLoaderData<typeof loader>();
+
+  if (organizationProfileSetupRequired) {
+    return (
+      <div>
+        <h1>Organization Profile Setup Required</h1>
+        <p>You must setup your organization profile before you can add customers.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg shadow-md p-4 sm:p-6 md:p-8 lg:p-10">
@@ -37,9 +81,9 @@ export default function Customers() {
       <Table>
         <TableBody>
           {customers.map((customer) => (
-            <TableRow key={customer.user.id}>
-              <TableCell>{customer.user.name}</TableCell>
-              <TableCell>{customer.account.userId}</TableCell>
+            <TableRow key={customer.id}>
+              <TableCell>{customer.name}</TableCell>
+              <TableCell>{customer.email}</TableCell>
             </TableRow>
           ))}
         </TableBody>
