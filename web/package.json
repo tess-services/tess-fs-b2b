@@ -84,6 +84,7 @@
     "@cloudflare/workers-types": "^4.20241018.0",
     "@hono/node-server": "^1.13.4",
     "@hono/vite-dev-server": "^0.16.0",
+    "@libsql/client": "^0.14.0",
     "@remix-run/dev": "^2.13.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
