@@ -1,4 +1,5 @@
 import { Link, useNavigate } from '@remix-run/react'
+import { Loader2, LogInIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
@@ -7,22 +8,28 @@ import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { signIn } from "~/lib/auth.client"
 
+type FormState = "YetToStartLogin" | "LoginInProgress" | "LoginFailed" | "LoginSuccess";
+
 export default function SignInForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [formState, setFormState] = useState<FormState>("YetToStartLogin");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      setFormState("LoginInProgress");
       await signIn.email({ email, password }, {
         onRequest: (ctx) => {
           // show loading state
         },
         onSuccess: (ctx) => {
           navigate("/provider/customers")
+          setFormState("LoginSuccess");
         },
         onError: (ctx) => {
+          setFormState("LoginFailed");
           alert(JSON.stringify(ctx.error, null, 2))
         },
       })
@@ -70,7 +77,17 @@ export default function SignInForm() {
                 </div>
                 <Input id="password" type="password" onChange={(e) => setPassword(e.target.value)} required />
               </div>
-              <Button type="submit" className="w-full">
+              <Button
+                className="w-full"
+                disabled={formState === "LoginInProgress"}
+              >
+
+                {formState === "LoginInProgress" ?
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  : (<span className="transition-all duration-200 group-hover:-rotate-12">
+                    <LogInIcon className="h-3.5 w-3.5" />
+                  </span>)
+                }
                 Login
               </Button>
               <Button variant="outline" disabled className="w-full">

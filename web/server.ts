@@ -37,7 +37,6 @@ app.on(["POST", "GET"], "/api/auth/**", (c) => {
   return auth.handler(c.req.raw);
 });
 
-
 app.use(
   async (c, next) => {
     if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {

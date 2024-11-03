@@ -14,8 +14,6 @@ const isMenuActive = ({ isActive }: { isActive: boolean }) =>
 export default function ProviderLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-
-
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b">
