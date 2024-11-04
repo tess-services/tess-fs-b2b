@@ -7,7 +7,9 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "~/compon
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet"
 
 const isMenuActive = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:text-gray-900'
+  `px-3 py-2 text-sm font-medium relative ${isActive
+    ? 'pt-4 text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-gradient-to-r after:from-primary after:to-purple-500'
+    : 'text-gray-600 hover:text-gray-900'
   }`
 
 export default function ProviderLayout() {
