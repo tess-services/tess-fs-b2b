@@ -17,6 +17,9 @@ preview_database_id = "LOCAL-INVOICE-001-DB" # Required for Pages local developm
 migrations_dir = "migrations"
 
 [vars]
+RESEND_SENDER_EMAIL = "anand@tessservices.com.au"
+BETTER_AUTH_URL = "http://localhost:5173"
+BETTER_AUTH_TRUSTED_ORIGINS = "http://localhost:5173,https://tess-fs.pages.dev/"
 
 [[env.production.d1_databases]]
 binding = "DB"
@@ -27,3 +30,4 @@ migrations_dir = "migrations"
 [env.production.vars]
 BETTER_AUTH_TRUSTED_ORIGINS = "https://tess-fs.pages.dev"
 BETTER_AUTH_URL = "https://tess-fs.pages.dev"
+RESEND_SENDER_EMAIL = "anand@tessservices.com.au"

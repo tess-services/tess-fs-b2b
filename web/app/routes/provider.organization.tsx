@@ -26,7 +26,6 @@ export const action: ActionFunction = async ({ request, context }) => {
   const { db, user } = context.cloudflare.var;
 
   if (!user || !db) {
-    console.log(user, db);
     throw new Error("Unauthorized");
   }
 

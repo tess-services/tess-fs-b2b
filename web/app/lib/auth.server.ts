@@ -4,9 +4,11 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
 import { Bindings } from "server";
 import * as schema from "../db/schema";
+import { sendEmail } from "./sendEmail";
+
+type User = { id: string; email: string; emailVerified: boolean; name: string; createdAt: Date; updatedAt: Date; image?: string | undefined; };
 
 export const initAuth = (bindings: Bindings): Auth => {
-  console.log(bindings.BETTER_AUTH_TRUSTED_ORIGINS, bindings.BETTER_AUTH_URL);
   return betterAuth({
     database: drizzleAdapter(drizzle(bindings.DB), {
       provider: "sqlite",
@@ -17,6 +19,27 @@ export const initAuth = (bindings: Bindings): Auth => {
     trustedOrigins: bindings.BETTER_AUTH_TRUSTED_ORIGINS.split(","),
     emailAndPassword: {
       enabled: true,
+      requireEmailVerification: true,
+      sendResetPassword: async (user: User, url: string) => {
+        await sendEmail({
+          apiKey: bindings.RESEND_API_KEY,
+          from: bindings.RESEND_SENDER_EMAIL,
+          to: user.email,
+          subject: 'Reset your password',
+          text: `Click the link to reset your password: ${url}`,
+        })
+      },
+    },
+    emailVerification: {
+      sendVerificationEmail: async (user: User, url: string) => {
+        await sendEmail({
+          apiKey: bindings.RESEND_API_KEY,
+          to: user.email,
+          from: bindings.RESEND_SENDER_EMAIL,
+          subject: 'Verify your email address',
+          text: `Click the link to verify your email: ${url}`,
+        })
+      }
     }
   });
 }

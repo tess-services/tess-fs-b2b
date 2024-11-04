@@ -1,8 +1,6 @@
 import type { AppLoadContext, RequestHandler, ServerBuild } from '@remix-run/cloudflare';
 import { logDevReady } from "@remix-run/cloudflare";
-import { initAuth } from "app/lib/auth.server";
 import { authMiddleware, providerAuthMiddleware } from 'AuthMiddleware';
-import type { Auth } from "better-auth";
 import { Hono } from "hono";
 import { poweredBy } from 'hono/powered-by';
 import { staticAssets } from 'remix-hono/cloudflare';
@@ -13,6 +11,8 @@ export type Bindings = {
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
   BETTER_AUTH_TRUSTED_ORIGINS: string;
+  RESEND_API_KEY: string;
+  RESEND_SENDER_EMAIL: string;
 };
 
 export type ContextEnv = {
@@ -31,11 +31,6 @@ app.use(authMiddleware);
 app.use("/provider", providerAuthMiddleware);
 
 app.use("/provider/**", providerAuthMiddleware);
-
-app.on(["POST", "GET"], "/api/auth/**", (c) => {
-  const auth: Auth = initAuth(c.env);
-  return auth.handler(c.req.raw);
-});
 
 app.use(
   async (c, next) => {
@@ -73,7 +68,6 @@ app.use(
         if (process.env.NODE_ENV === "development") {
           logDevReady(build);
         }
-
       }
 
       const remixContext = {

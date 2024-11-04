@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@remix-run/react'
+import { Link, useNavigate, useSearchParams } from '@remix-run/react'
 import { Loader2, LogInIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from "~/components/ui/button"
@@ -6,31 +6,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { EmptyGridBackground } from '~/components/ui/emptyBackground'
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
-import { signIn } from "~/lib/auth.client"
+import { forgetPassword, signIn } from "~/lib/auth.client"
 
-type FormState = "YetToStartLogin" | "LoginInProgress" | "LoginFailed" | "LoginSuccess";
+type FormState = "YetToStartLogin" | "LoginInProgress" | "LoginFailed" | "LoginSuccess" | "ForgotPasswordInProgress" | "ForgotPasswordFailed" | "ForgotPasswordSuccess";
 
 export default function SignInForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate();
   const [formState, setFormState] = useState<FormState>("YetToStartLogin");
+  const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       setFormState("LoginInProgress");
+      setError("");
+
       await signIn.email({ email, password }, {
         onRequest: (ctx) => {
           // show loading state
         },
         onSuccess: (ctx) => {
-          navigate("/provider/customers")
+          navigate("/provider")
           setFormState("LoginSuccess");
         },
         onError: (ctx) => {
           setFormState("LoginFailed");
-          alert(JSON.stringify(ctx.error, null, 2))
+          if (ctx.error.message) {
+            setError(ctx.error.message);
+          }
         },
       })
       // Handle successful sign-in (e.g., redirect or show a success message)
@@ -40,8 +46,44 @@ export default function SignInForm() {
     }
   }
 
+  const handleForgotPassword = async () => {
+    if (!email || email.includes('@') === false) {
+      alert('Please enter your email to reset your password');
+      return;
+    }
+
+    try {
+      setFormState("ForgotPasswordInProgress");
+      await forgetPassword({ email, redirectTo: "/reset-password" });
+      setError('Password reset email sent');
+      setFormState("ForgotPasswordSuccess");
+      navigate("/signin");
+
+    } catch (error) {
+      console.error('Password reset failed:', error);
+      alert('Password reset failed');
+    }
+  }
+  const isInProgress = formState === "LoginInProgress" || formState === "ForgotPasswordInProgress";
+
+  if (formState === "ForgotPasswordSuccess") {
+    return (
+      <div className="flex h-screen w-full items-center justify-center px-4">
+        <EmptyGridBackground />
+
+        <Card className="relative mx-auto max-w-sm">
+          <CardHeader>
+            <CardTitle className="text-2xl">Login</CardTitle>
+            <CardDescription>
+              Please check your email and follow the instructions to reset your password
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    )
+  }
+
   return (
-    // <div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-gray-50 py-6 sm:py-12">
     <div className="flex h-screen w-full items-center justify-center px-4">
       <EmptyGridBackground />
 
@@ -50,6 +92,19 @@ export default function SignInForm() {
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
             Enter your email below to login to your account
+            {
+              searchParams.get("verified") && (
+                <span className="text-green-500">
+                  {" "}Your email has been verified. You can now login.
+                </span>
+              )
+            }
+            {
+              searchParams.get("registered") && (
+                <span className="text-green-500">
+                  {" "}Your account has been created. Please check your email to verify your email first.
+                </span>)
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -68,21 +123,35 @@ export default function SignInForm() {
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <Link
-                    to="#"
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={handleForgotPassword}
                     className="ml-auto inline-block text-sm underline"
+                    disabled={isInProgress}
                   >
-                    Forgot your password?
-                  </Link>
+                    {isInProgress ?
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      : (<span className="transition-all duration-200 group-hover:-rotate-12">
+                        Forgot your password?
+                      </span>)
+                    }
+
+                  </Button>
                 </div>
                 <Input id="password" type="password" onChange={(e) => setPassword(e.target.value)} required />
               </div>
+              {error && (
+                <div className="text-red-500 mb-2">
+                  {error}
+                </div>
+              )}
               <Button
                 className="w-full"
-                disabled={formState === "LoginInProgress"}
+                disabled={isInProgress}
               >
 
-                {formState === "LoginInProgress" ?
+                {isInProgress ?
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   : (<span className="transition-all duration-200 group-hover:-rotate-12">
                     <LogInIcon className="h-3.5 w-3.5" />

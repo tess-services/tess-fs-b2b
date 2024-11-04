@@ -8,7 +8,6 @@ export async function loader({ context }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
 
   if (!user || !db) {
-    console.log(user, db);
     throw new Error("Unauthorized");
   }
 
@@ -40,7 +39,6 @@ export async function action({ request, context }: ActionFunctionArgs) {
   if (!user || !db) {
     throw new Error("Unauthorized");
   }
-  console.log(formData);
   const organization = await db.select().from(userOrganizationTable)
     .where(eq(userOrganizationTable.userId, user.id)).execute();
 
