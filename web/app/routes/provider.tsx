@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "@remix-run/react"
 import { Menu, UserCircle } from "lucide-react"
 import { useState } from "react"
+import { ModeToggle } from "~/components/mode-toggle"
 import { Button } from "~/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu"
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "~/components/ui/navigation-menu"
@@ -80,6 +81,10 @@ export default function ProviderLayout() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
+                    <ModeToggle />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+
                     <NavLink to="/provider/profile" className="w-full">
                       Profile
                     </NavLink>

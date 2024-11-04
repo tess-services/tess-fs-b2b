@@ -2,6 +2,7 @@ import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { json } from "@remix-run/cloudflare";
 import {
   Links,
+  LiveReload,
   Meta,
   Outlet,
   Scripts,
@@ -11,7 +12,8 @@ import {
 } from "@remix-run/react";
 import { themeSessionResolver } from "./sessions.server";
 
-import { ThemeProvider } from "remix-themes";
+import clsx from "clsx";
+import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from "remix-themes";
 import "./tailwind.css";
 
 export const links: LinksFunction = () => [
@@ -39,20 +41,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 
-export function Layout({ children }: { children: React.ReactNode }) {
+function App() {
   const data = useLoaderData<typeof loader>();
+  const [theme] = useTheme()
 
   return (
-    <html lang="en">
+    <html lang="en" className={clsx(theme)} style={{ colorScheme: theme }} >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
+        <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
         <Links />
       </head>
       <body>
 
-        {children}
+        <Outlet />
         <ScrollRestoration />
         <script
           dangerouslySetInnerHTML={{
@@ -62,18 +66,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
           }}
         />
         <Scripts />
+        {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
   );
 }
 
-export default function App() {
+export default function AppWithProviders() {
   const data = useLoaderData<typeof loader>()
 
   return (
-    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
-
-      <Outlet />
+    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme" disableTransitionOnThemeChange={true}>
+      <App />
     </ThemeProvider>);
 }
 
@@ -81,7 +85,7 @@ export function ErrorBoundary() {
   const error = useRouteError();
   console.error(error);
   return (
-    <html>
+    <html lang="en">
       <head>
         <title>Oh no!</title>
         <Meta />
