@@ -1,7 +1,6 @@
 import { NavLink, Outlet } from "@remix-run/react"
 import { Menu, UserCircle } from "lucide-react"
 import { useState } from "react"
-import { SignOut } from "~/components/sign-out"
 import { Button } from "~/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu"
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "~/components/ui/navigation-menu"
@@ -84,7 +83,9 @@ export default function ProviderLayout() {
                     </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <SignOut />
+                    <NavLink to="/sign-out" className="w-full">
+                      Sign out
+                    </NavLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

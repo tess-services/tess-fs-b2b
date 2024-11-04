@@ -3,8 +3,8 @@ import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: "Biz Solutions Provider" },
+    { name: "description", content: "Biz solutions provider" },
   ];
 };
 
@@ -28,8 +28,8 @@ export default function Index() {
         <div className="h-[144px] w-[434px]">
           <img
             src="/assets/logo.webp"
-            alt="Remix"
-            className="block w-full dark:hidden"
+            alt="logo"
+            className="block w-full"
           />
         </div>
 

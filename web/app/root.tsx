@@ -7,6 +7,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRouteError,
 } from "@remix-run/react";
 import { themeSessionResolver } from "./sessions.server";
 
@@ -74,4 +75,22 @@ export default function App() {
 
       <Outlet />
     </ThemeProvider>);
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  console.error(error);
+  return (
+    <html>
+      <head>
+        <title>Oh no!</title>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {/* add the UI you want your users to see */}
+        <Scripts />
+      </body>
+    </html>
+  );
 }
