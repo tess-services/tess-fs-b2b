@@ -9,8 +9,8 @@ import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet"
 
 const isMenuActive = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-2 text-sm font-medium relative ${isActive
-    ? 'pt-4 text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-gradient-to-r after:from-primary after:to-purple-500'
-    : 'text-gray-600 hover:text-gray-900'
+    ? 'border-b-2 border-b-indigo-500 '
+    : 'text-muted-foreground'
   }`
 
 export default function ProviderLayout() {
@@ -54,8 +54,7 @@ export default function ProviderLayout() {
                 <NavigationMenuItem>
                   <NavLink
                     to="/provider/customers"
-                    className={isMenuActive
-                    }
+                    className={isMenuActive}
                   >
                     Customers
                   </NavLink>

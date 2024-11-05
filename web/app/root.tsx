@@ -40,13 +40,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-
 function App() {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme()
-
+  const bgClass = theme === 'dark' ? "absolute top-0 z-[-2] h-screen w-screen bg-neutral-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" :
+    "absolute top-0 z-[-2] h-screen w-screen bg-white bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"
   return (
-    <html lang="en" className={clsx(theme)} style={{ colorScheme: theme }} >
+    <html lang="en" className={clsx(theme)} style={{ colorScheme: theme ?? 'inherit' }} >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -54,9 +54,10 @@ function App() {
         <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
         <Links />
       </head>
-      <body>
-
-        <Outlet />
+      <body >
+        <div className={bgClass}>
+          <Outlet />
+        </div>
         <ScrollRestoration />
         <script
           dangerouslySetInnerHTML={{
