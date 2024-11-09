@@ -1,27 +1,30 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { json, type ActionFunction, type LoaderFunction, type LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { Form, useLoaderData, useNavigation } from "@remix-run/react";
+import { ActionFunctionArgs, json, type LoaderFunction, type LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { Form, useActionData, useLoaderData, useNavigate, useNavigation } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { useEffect } from "react";
+import { FieldErrors } from "react-hook-form";
 import { getValidatedFormData, RemixFormProvider, useRemixForm } from "remix-hook-form";
 import { z } from "zod";
+import { Button } from "~/components/ui/button";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { organizationTable, userOrganizationTable } from "~/db/schema";
+import { useToast } from "~/hooks/use-toast";
 
 const insertOrganizationSchema = createInsertSchema(organizationTable, {
   currentInvoiceNumber: z.number({ coerce: true }).int().positive(),
+  createdAt: z.date({ coerce: true }),
+  updatedAt: z.date({ coerce: true }),
 });
 const selectOrganizationSchema = createSelectSchema(organizationTable);
 
 const resolver = zodResolver(insertOrganizationSchema);
 
 type OrganizationFormType = z.infer<typeof insertOrganizationSchema>;
-type OrganizationType = z.infer<typeof selectOrganizationSchema>;
-type OrganziationLoaderData = {
-  organization: OrganizationType | null;
-}
+type OrganizationLoaderType = z.infer<typeof selectOrganizationSchema>;
 
 export const loader: LoaderFunction = async ({ context }: LoaderFunctionArgs) => {
   const { db, user } = context.cloudflare.var;
@@ -41,10 +44,16 @@ export const loader: LoaderFunction = async ({ context }: LoaderFunctionArgs) =>
     return json({ organization: null });
   }
 
-  return json({ organization: userOrg[0].organization });
+  return json(userOrg[0].organization);
 };
 
-export const action: ActionFunction = async ({ request, context }) => {
+type ActionData = {
+  success?: boolean;
+  error?: string;
+  errors?: FieldErrors<OrganizationFormType>;
+};
+
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const { db, user } = context.cloudflare.var;
 
   if (!user || !db) {
@@ -60,6 +69,7 @@ export const action: ActionFunction = async ({ request, context }) => {
   if (errors) {
     return json({ errors });
   }
+
   const { id: organizationId, ...organizationData } = data;
 
   try {
@@ -94,15 +104,37 @@ export const action: ActionFunction = async ({ request, context }) => {
 };
 
 export default function OrganizationProfile() {
-  const { organization } = useLoaderData<OrganziationLoaderData>();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
+  const organization = useLoaderData<OrganizationLoaderType>();
+  const formNavigation = useNavigation();
+  const navigate = useNavigate();
+  const isSubmitting = formNavigation.state === "submitting";
+  const actionData = useActionData<ActionData>();
+  const { toast } = useToast()
 
   const form = useRemixForm<OrganizationFormType>({
     mode: "onSubmit",
     resolver,
     defaultValues: organization || {},
   });
+
+  useEffect(() => {
+    if (actionData?.success) {
+      console.log("Organization saved successfully");
+      toast({
+        title: "Organization saved successfully",
+        description: "Organization profile has been updated successfully",
+        variant: "default",
+      });
+    }
+    if (actionData?.error) {
+      console.error("Failed to save organization", actionData.error);
+      toast({
+        title: "Failed to save organization",
+        description: actionData.error,
+        variant: "destructive",
+      });
+    }
+  }, [actionData]);
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -147,6 +179,7 @@ export default function OrganizationProfile() {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="phone"
@@ -163,6 +196,7 @@ export default function OrganizationProfile() {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="businessAddress"
@@ -257,16 +291,22 @@ export default function OrganizationProfile() {
             )}
           />
 
-          <div className="lg:col-span-2">
-            <button
+          <div className="flex gap-8 lg:col-span-2 justify-end">
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
             >
               {isSubmitting
                 ? "Saving..."
-                : "Save"}
-            </button>
+                : "Submit"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => navigate(-1)}
+            >
+              Cancel
+            </Button>
           </div>
         </Form>
       </RemixFormProvider>

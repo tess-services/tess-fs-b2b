@@ -14,6 +14,7 @@ import { themeSessionResolver } from "./sessions.server";
 
 import clsx from "clsx";
 import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from "remix-themes";
+import { Toaster } from "./components/ui/toaster";
 import "./tailwind.css";
 
 export const links: LinksFunction = () => [
@@ -43,8 +44,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 function App() {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme()
-  const bgClass = theme === 'dark' ? "absolute top-0 z-[-2] h-screen w-screen bg-neutral-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" :
-    "absolute top-0 z-[-2] h-screen w-screen bg-white bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"
+  const bgClass = theme === 'dark' ? "absolute top-0 z-[-2] h-screen w-screen bg-neutral-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" :
+    "absolute top-0 z-[-2] h-screen w-screen bg-white bg-[radial-gradient(ellipse_80%_80%_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"
   return (
     <html lang="en" className={clsx(theme)} style={{ colorScheme: theme ?? 'inherit' }} >
       <head>
@@ -57,6 +58,7 @@ function App() {
       <body >
         <div className={bgClass}>
           <Outlet />
+          <Toaster />
         </div>
         <ScrollRestoration />
         <script
