@@ -1,6 +1,7 @@
 import { Link, useNavigate, useSearchParams } from '@remix-run/react'
 import { Loader2, LogInIcon } from 'lucide-react'
 import { useState } from 'react'
+import { CenterScreenContainer } from '~/components/CenterScreenContainer'
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
@@ -67,8 +68,7 @@ export default function SignInForm() {
 
   if (formState === "ForgotPasswordSuccess") {
     return (
-      <div className="flex h-screen w-full items-center justify-center px-4">
-
+      <CenterScreenContainer>
         <Card className="relative mx-auto max-w-sm">
           <CardHeader>
             <CardTitle className="text-2xl">Login</CardTitle>
@@ -77,94 +77,95 @@ export default function SignInForm() {
             </CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </CenterScreenContainer>
     )
   }
 
   return (
-    <Card className="relative mx-auto max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl">Login</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-          {
-            searchParams.get("verified") && (
-              <span className="text-green-500">
-                {" "}Your email has been verified. You can now login.
-              </span>
-            )
-          }
-          {
-            searchParams.get("registered") && (
-              <span className="text-green-500">
-                {" "}Your account has been created. Please check your email to verify your email first.
-              </span>)
-          }
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={handleForgotPassword}
-                  className="ml-auto inline-block text-sm underline"
-                  disabled={isInProgress}
-                >
-                  {isInProgress ?
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    : (<span className="transition-all duration-200 group-hover:-rotate-12">
-                      Forgot your password?
-                    </span>)
-                  }
-
-                </Button>
-              </div>
-              <Input id="password" type="password" onChange={(e) => setPassword(e.target.value)} required />
-            </div>
-            {error && (
-              <div className="text-red-500 mb-2">
-                {error}
-              </div>
-            )}
-            <Button
-              className="w-full"
-              disabled={isInProgress}
-            >
-
-              {isInProgress ?
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                : (<span className="transition-all duration-200 group-hover:-rotate-12">
-                  <LogInIcon className="h-3.5 w-3.5" />
+    <CenterScreenContainer>
+      <Card className="relative mx-auto max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+            {
+              searchParams.get("verified") && (
+                <span className="text-green-500">
+                  {" "}Your email has been verified. You can now login.
+                </span>
+              )
+            }
+            {
+              searchParams.get("registered") && (
+                <span className="text-green-500">
+                  {" "}Your account has been created. Please check your email to verify your email first.
                 </span>)
-              }
-              Login
-            </Button>
-            <Button variant="outline" disabled className="w-full">
-              Login with Google
-            </Button>
-          </div>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" className="underline">
-              Sign up
-            </Link>
-          </div>
-        </form>
-      </CardContent>
-    </Card>)
+            }
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={handleForgotPassword}
+                    className="ml-auto inline-block text-sm underline"
+                    disabled={isInProgress}
+                  >
+                    {isInProgress ?
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      : (<span className="transition-all duration-200 group-hover:-rotate-12">
+                        Forgot your password?
+                      </span>)
+                    }
+
+                  </Button>
+                </div>
+                <Input id="password" type="password" onChange={(e) => setPassword(e.target.value)} required />
+              </div>
+              {error && (
+                <div className="text-red-500 mb-2">
+                  {error}
+                </div>
+              )}
+              <Button
+                className="w-full"
+                disabled={isInProgress}
+              >
+
+                {isInProgress ?
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  : (<span className="transition-all duration-200 group-hover:-rotate-12">
+                    <LogInIcon className="h-3.5 w-3.5" />
+                  </span>)
+                }
+                Login
+              </Button>
+              <Button variant="outline" disabled className="w-full">
+                Login with Google
+              </Button>
+            </div>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?{" "}
+              <Link to="/signup" className="underline">
+                Sign up
+              </Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card></CenterScreenContainer>)
 }

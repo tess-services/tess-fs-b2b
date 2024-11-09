@@ -1,9 +1,29 @@
-import { json, type ActionFunction, type LoaderFunction } from "@remix-run/cloudflare";
-import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { json, type ActionFunction, type LoaderFunction, type LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { Form, useLoaderData, useNavigation } from "@remix-run/react";
 import { eq } from "drizzle-orm";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { getValidatedFormData, RemixFormProvider, useRemixForm } from "remix-hook-form";
+import { z } from "zod";
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { organizationTable, userOrganizationTable } from "~/db/schema";
 
-export const loader: LoaderFunction = async ({ context }) => {
+const insertOrganizationSchema = createInsertSchema(organizationTable, {
+  currentInvoiceNumber: z.number({ coerce: true }).int().positive(),
+});
+const selectOrganizationSchema = createSelectSchema(organizationTable);
+
+const resolver = zodResolver(insertOrganizationSchema);
+
+type OrganizationFormType = z.infer<typeof insertOrganizationSchema>;
+type OrganizationType = z.infer<typeof selectOrganizationSchema>;
+type OrganziationLoaderData = {
+  organization: OrganizationType | null;
+}
+
+export const loader: LoaderFunction = async ({ context }: LoaderFunctionArgs) => {
   const { db, user } = context.cloudflare.var;
 
   if (!user || !db) {
@@ -11,12 +31,14 @@ export const loader: LoaderFunction = async ({ context }) => {
   }
 
   // Find user's organization
-  const userOrg = await db.select().from(userOrganizationTable).where(
-    eq(userOrganizationTable.userId, user.id)
-  ).innerJoin(organizationTable, eq(userOrganizationTable.organizationId, organizationTable.id)).execute();
+  const userOrg = await db.select().from(userOrganizationTable)
+    .innerJoin(organizationTable, eq(userOrganizationTable.organizationId, organizationTable.id))
+    .where(
+      eq(userOrganizationTable.userId, user.id)
+    ).execute();
 
   if (userOrg.length === 0) {
-    return json({ organization: {} as typeof organizationTable });
+    return json({ organization: null });
   }
 
   return json({ organization: userOrg[0].organization });
@@ -29,19 +51,16 @@ export const action: ActionFunction = async ({ request, context }) => {
     throw new Error("Unauthorized");
   }
 
-  const formData = await request.formData();
-  const name = formData.get("name") as string;
-  const abn = formData.get("abn") as string;
-  const phone = formData.get("phone") as string;
-  const businessAddress = formData.get("businessAddress") as string;
-  const email = formData.get("email") as string;
-  const tradeCurrency = formData.get("tradeCurrency") as string;
-  const organizationId = formData.get("organizationId") as string;
+  const { errors, data } = await getValidatedFormData<OrganizationFormType>(
+    request,
+    resolver,
+    false,
+  );
 
-  // Validation
-  if (!name || !abn || !phone || !businessAddress || !email || !tradeCurrency) {
-    return json({ error: "All fields are required" }, { status: 400 });
+  if (errors) {
+    return json({ errors });
   }
+  const { id: organizationId, ...organizationData } = data;
 
   try {
     if (organizationId) {
@@ -49,12 +68,7 @@ export const action: ActionFunction = async ({ request, context }) => {
       await db
         .update(organizationTable)
         .set({
-          name,
-          abn,
-          phone,
-          businessAddress,
-          email,
-          tradeCurrency,
+          ...organizationData,
           updatedAt: new Date(),
         })
         .where(eq(organizationTable.id, organizationId));
@@ -62,14 +76,7 @@ export const action: ActionFunction = async ({ request, context }) => {
       // Create new organization
       const [newOrg] = await db
         .insert(organizationTable)
-        .values({
-          name,
-          abn,
-          phone,
-          businessAddress,
-          email,
-          tradeCurrency,
-        })
+        .values(organizationData)
         .returning();
 
       // Create user-organization relationship
@@ -87,108 +94,182 @@ export const action: ActionFunction = async ({ request, context }) => {
 };
 
 export default function OrganizationProfile() {
-  const { organization } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
+  const { organization } = useLoaderData<OrganziationLoaderData>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
+
+  const form = useRemixForm<OrganizationFormType>({
+    mode: "onSubmit",
+    resolver,
+    defaultValues: organization || {},
+  });
 
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">
         {organization ? "Update Organization Profile" : "Create Organization Profile"}
       </h1>
-
-      <Form method="post" className="space-y-4">
-        {organization && (
-          <input type="hidden" name="organizationId" value={organization.id} />
-        )}
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Organization Name</label>
-          <input
-            type="text"
+      <RemixFormProvider {...form}>
+        <Form method="post" onSubmit={form.handleSubmit} className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:gap-x-8">
+          {organization && (
+            <input type="hidden" name="id" value={organization.id} />
+          )}
+          <FormField
+            control={form.control}
             name="name"
-            defaultValue={organization?.name}
-            className="w-full border rounded-md px-3 py-2"
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Organization name</FormLabel>
+                <FormControl>
+                  <Input placeholder="ABC Pty Ltd" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Name of your organization, will appear in documents as your organization name.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">ABN</label>
-          <input
-            type="text"
+          <FormField
+            control={form.control}
             name="abn"
-            defaultValue={organization?.abn}
-            className="w-full border rounded-md px-3 py-2"
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ABN</FormLabel>
+                <FormControl>
+                  <Input placeholder="50 110 219 460" {...field} />
+                </FormControl>
+                <FormDescription>
+                  ABN of your organization
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Phone</label>
-          <input
-            type="tel"
+          <FormField
+            control={form.control}
             name="phone"
-            defaultValue={organization?.phone}
-            className="w-full border rounded-md px-3 py-2"
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone</FormLabel>
+                <FormControl>
+                  <Input placeholder="+61 20 11112222" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Phone number of your organization
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Business Address</label>
-          <input
-            type="text"
+          <FormField
+            control={form.control}
             name="businessAddress"
-            defaultValue={organization?.businessAddress}
-            className="w-full border rounded-md px-3 py-2"
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Business address</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormDescription>
+                  Address which will appear in invoice etc.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
+          <FormField
+            control={form.control}
             name="email"
-            defaultValue={organization?.email}
-            className="w-full border rounded-md px-3 py-2"
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="xyz@abc.com" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Email from which invoices will be sent
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Trade Currency</label>
-          <select
+          <FormField
+            control={form.control}
             name="tradeCurrency"
-            defaultValue={organization?.tradeCurrency || "AUD"}
-            className="w-full border rounded-md px-3 py-2"
-            required
-          >
-            <option value="AUD">AUD</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-          </select>
-        </div>
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Trade currency</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a currency you use" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="AUD">AUD</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="NZD">NZD</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                    <SelectItem value="INR">INR</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* {actionData?.error && (
-          <div className="text-red-600 text-sm">{actionData.error}</div>
-        )} */}
+          <FormField
+            control={form.control}
+            name="invoicePrefix"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Invoice prefix</FormLabel>
+                <FormControl>
+                  <Input placeholder="INV" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Constant invoice prefix
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
-        >
-          {isSubmitting
-            ? "Saving..."
-            : organization
-              ? "Update Organization"
-              : "Create Organization"}
-        </button>
-      </Form>
+          <FormField
+            control={form.control}
+            name="currentInvoiceNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Current pending invoice number</FormLabel>
+                <FormControl>
+                  <Input type="number" required placeholder="1" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Number which will be used for next invoice
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="lg:col-span-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+            >
+              {isSubmitting
+                ? "Saving..."
+                : "Save"}
+            </button>
+          </div>
+        </Form>
+      </RemixFormProvider>
     </div>
   );
 };
