@@ -19,7 +19,7 @@ export const initAuth = (bindings: Bindings): Auth => {
     trustedOrigins: bindings.BETTER_AUTH_TRUSTED_ORIGINS.split(","),
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: true,
+      requireEmailVerification: process.env.NODE_ENV !== 'development',
       sendResetPassword: async (user: User, url: string) => {
         await sendEmail({
           apiKey: bindings.RESEND_API_KEY,
@@ -32,6 +32,8 @@ export const initAuth = (bindings: Bindings): Auth => {
     },
     emailVerification: {
       sendVerificationEmail: async (user: User, url: string) => {
+        // don't send email when development env
+        if (process.env.NODE_ENV === 'development') return;
         await sendEmail({
           apiKey: bindings.RESEND_API_KEY,
           to: user.email,
