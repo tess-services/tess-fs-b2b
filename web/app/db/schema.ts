@@ -144,7 +144,6 @@ export const customerTable = sqliteTable("customer", {
   email: text("email").notNull(),
   isCommercial: integer("is_commercial", { mode: "boolean" }).default(false),
 
-  organizationId: text("organization_id").notNull().references(() => organizationTable.id),
   addedByUserId: text("added_by_user_id").notNull().references(() => user.id),
 
   createdAt: integer("created_at", { mode: "timestamp" }).default(
@@ -156,15 +155,15 @@ export const customerTable = sqliteTable("customer", {
   ).notNull(),
 });
 
-export const customerUserMapping
-  = sqliteTable("customer_user_mapping", {
+export const customerOrganizationMapping
+  = sqliteTable("customer_organization_mapping", {
     customerId: text("customer_id").notNull().references(() => customerTable.id),
-    userId: text("user_id").notNull().references(() => user.id),
+    organizationId: text("organization_id").notNull().references(() => organizationTable.id),
     createdAt: integer("created_at", { mode: "timestamp" }).default(
       sql`(strftime('%s', 'now'))`,
     ),
   }, (table) => ({
-    pk: primaryKey({ name: 'customer_user_mapping_pk', columns: [table.customerId, table.userId] })
+    pk: primaryKey({ name: 'customer_organization_mapping_pk', columns: [table.customerId, table.organizationId] })
   }));
 
 export const invoiceTable = sqliteTable('invoice', {

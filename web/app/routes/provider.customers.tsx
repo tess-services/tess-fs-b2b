@@ -1,8 +1,9 @@
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { Form, useLoaderData } from "@remix-run/react";
+import { json, LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { Table, TableBody, TableCell, TableRow } from "~/components/ui/table";
-import { customerTable, userOrganizationTable } from "~/db/schema";
+import { Button } from "~/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { customerOrganizationMapping, customerTable, userOrganizationTable } from "~/db/schema";
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
@@ -11,100 +12,42 @@ export async function loader({ context }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
 
-  const organization = await db.select().from(userOrganizationTable)
+  // TODO: Perform join but PICK only customer table data!
+  const customers = await db.select().from(customerTable)
+    .innerJoin(customerOrganizationMapping, eq(customerOrganizationMapping.organizationId, customerOrganizationMapping.organizationId))
+    .innerJoin(userOrganizationTable, eq(userOrganizationTable.organizationId, customerOrganizationMapping.organizationId))
     .where(eq(userOrganizationTable.userId, user.id)).execute();
 
-  if (organization.length === 0) {
-    return json({ customers: [], organizationProfileSetupRequired: true });
-  }
-
-  const organizationId = organization[0].organizationId;
-
-  const customers = await db.select({
-    customer: customerTable,
-  }).from(customerTable)
-    .innerJoin(userOrganizationTable, eq(customerTable.organizationId, userOrganizationTable.organizationId))
-    .where(eq(userOrganizationTable.organizationId, organizationId))
-    .execute();
-
-  return json({ customers: customers.map(c => c.customer), organizationProfileSetupRequired: false });
-}
-
-export async function action({ request, context }: ActionFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-
-  const formData = await request.formData();
-  const updates = Object.fromEntries(formData);
-
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
-  const organization = await db.select().from(userOrganizationTable)
-    .where(eq(userOrganizationTable.userId, user.id)).execute();
-
-  if (organization.length === 0) {
-    return json({ customers: [], organizationProfileSetupRequired: true });
-  }
-
-  const organizationId = organization[0].organizationId;
-
-  await db.insert(customerTable).values({
-    name: updates.name,
-    email: updates.email,
-    address: updates.address,
-    suburb: updates.suburb,
-    phone: updates.phone,
-    organizationId,
-    addedByUserId: user.id,
-  });
-
-  return json({ message: "Customer added" }, { status: 201 });
+  return json({ customers: customers.map(c => c.customer) });
 }
 
 export default function Customers() {
-  const { customers, organizationProfileSetupRequired } = useLoaderData<typeof loader>();
-
-  if (organizationProfileSetupRequired) {
-    return (
-      <div>
-        <h1>Organization Profile Setup Required</h1>
-        <p>You must setup your organization profile before you can add customers.</p>
-      </div>
-    );
-  }
+  const { customers } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   return (
-    <div className="rounded-lg shadow-md p-4 sm:p-6 md:p-8 lg:p-10">
-      <h1>Customers</h1>
+    <div className="max-w-2xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">
+        Customers
+      </h1>
+      <Button onClick={() => navigate("/provider/customer/new")}>Add new customer</Button>
       <Table>
+        <TableHeader>
+          <TableHead>Name</TableHead>
+          <TableHead>Address</TableHead>
+        </TableHeader>
         <TableBody>
-          {customers.map((customer) => (
-            <TableRow key={customer.id}>
-              <TableCell>{customer.name}</TableCell>
-              <TableCell>{customer.email}</TableCell>
-            </TableRow>
-          ))}
+          {
+            customers.map(c => {
+              return (<TableRow key={c.id}>
+                <TableCell>{c.name}</TableCell>
+                <TableCell>{c.address}</TableCell>
+
+              </TableRow>)
+            })
+          }
         </TableBody>
       </Table>
-      <Form method="post">
-        <label htmlFor="name">Name:</label>
-        <input id="name" type="text" name="name" />
-
-        <label htmlFor="address">Address:</label>
-        <input id="address" type="text" name="address" />
-
-        <label htmlFor="suburb">Suburb:</label>
-        <input id="suburb" type="text" name="suburb" />
-
-        <label htmlFor="phone">Phone:</label>
-        <input id="phone" type="text" name="phone" />
-
-        <label htmlFor="email">Email:</label>
-        <input id="email" type="email" name="email" />
-
-
-        <button type="submit">Add Customer</button>
-      </Form>
     </div>
-  );
+  )
 }
