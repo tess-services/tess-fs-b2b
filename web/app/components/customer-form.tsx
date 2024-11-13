@@ -13,10 +13,12 @@ export const CustomerForm = ({
   actionData,
   organizationId,
   form,
+  mode = "new",
 }: {
   actionData?: ActionData;
   organizationId: string;
   form: any; // TODO: fix it.
+  mode?: "edit" | "new";
 
 }) => {
   const formNavigation = useNavigation();
@@ -46,7 +48,7 @@ export const CustomerForm = ({
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Add New Customer</h1>
+      <h1 className="text-2xl font-bold mb-6">{mode === "edit" ? "Update customer detail" : "Add New Customer"}</h1>
       <RemixFormProvider {...form}>
         <Form method="post" onSubmit={form.handleSubmit} className="space-y-4">
           <input type="hidden" name="organizationId" value={organizationId} />
@@ -146,8 +148,9 @@ export const CustomerForm = ({
             <Button
               type="submit"
               disabled={isSubmitting}
+
             >
-              {isSubmitting ? "Saving..." : "Add Customer"}
+              {mode === "edit" ? "Update customer" : "Add customer"}
             </Button>
             <Button
               type="button"

@@ -148,7 +148,7 @@ export const customerTable = sqliteTable("customer", {
 
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
-  ),
+  ).notNull(),
 
   updatedAt: integer("updated_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,

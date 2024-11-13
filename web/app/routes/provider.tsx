@@ -99,7 +99,7 @@ export default function ProviderLayout() {
           </div>
         </div>
       </header>
-      <main className="flex-1 mx-auto max-w-7xl px-4 sm:px-6 md:px-8 lg:px-10 py-6">
+      <main className="flex-1 sm:mx-auto sm:w-full md:max-w-7xl lg:w-full md:px-8 lg:px-10 py-6">
         <Outlet />
       </main>
     </div>

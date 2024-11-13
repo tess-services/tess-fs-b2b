@@ -44,8 +44,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 function App() {
   const data = useLoaderData<typeof loader>();
   const [theme] = useTheme()
-  const bgClass = theme === 'dark' ? "absolute top-0 z-[-2] h-screen w-screen bg-neutral-950 bg-[radial-gradient(ellipse_80%_80%_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" :
-    "absolute top-0 z-[-2] h-screen w-screen bg-white bg-[radial-gradient(ellipse_80%_80%_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"
+  const bgClass = theme === 'dark' ? "bg-gradient-to-b from-zinc-800 via-stone-800 to-zinc-900" :
+    "bg-gradient-to-b from-silver-100 to-white"
   return (
     <html lang="en" className={clsx(theme)} style={{ colorScheme: theme ?? 'inherit' }} >
       <head>
@@ -55,8 +55,8 @@ function App() {
         <PreventFlashOnWrongTheme ssrTheme={Boolean(data.theme)} />
         <Links />
       </head>
-      <body >
-        <div className={bgClass}>
+      <body>
+        <div className={bgClass} >
           <Outlet />
           <Toaster />
         </div>
