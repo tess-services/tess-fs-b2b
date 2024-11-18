@@ -2,13 +2,12 @@ import type { Auth } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
-import { Bindings } from "server";
 import * as schema from "../db/schema";
 import { sendEmail } from "./sendEmail";
 
-type User = { id: string; email: string; emailVerified: boolean; name: string; createdAt: Date; updatedAt: Date; image?: string | undefined; };
+type User = { id: string; email: string; emailVerified: boolean; name: string; createdAt: Date; updatedAt: Date; image?: string | null | undefined; };
 
-export const initAuth = (bindings: Bindings): Auth => {
+export const initAuth = (bindings: Env): Auth => {
   return betterAuth({
     database: drizzleAdapter(drizzle(bindings.DB), {
       provider: "sqlite",
@@ -20,26 +19,26 @@ export const initAuth = (bindings: Bindings): Auth => {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: process.env.NODE_ENV !== 'development',
-      sendResetPassword: async (user: User, url: string) => {
+      sendResetPassword: async (data: { user: User, url: string }) => {
         await sendEmail({
           apiKey: bindings.RESEND_API_KEY,
           from: bindings.RESEND_SENDER_EMAIL,
-          to: user.email,
+          to: data.user.email,
           subject: 'Reset your password',
-          text: `Click the link to reset your password: ${url}`,
+          text: `Click the link to reset your password: ${data.url}`,
         })
       },
     },
     emailVerification: {
-      sendVerificationEmail: async (user: User, url: string) => {
+      sendVerificationEmail: async (data: { user: User, url: string }) => {
         // don't send email when development env
         if (process.env.NODE_ENV === 'development') return;
         await sendEmail({
           apiKey: bindings.RESEND_API_KEY,
-          to: user.email,
+          to: data.user.email,
           from: bindings.RESEND_SENDER_EMAIL,
           subject: 'Verify your email address',
-          text: `Click the link to verify your email: ${url}`,
+          text: `Click the link to verify your email: ${data.url}`,
         })
       }
     }

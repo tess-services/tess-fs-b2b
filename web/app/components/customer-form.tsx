@@ -19,7 +19,6 @@ export const CustomerForm = ({
   organizationId: string;
   form: any; // TODO: fix it.
   mode?: "edit" | "new";
-
 }) => {
   const formNavigation = useNavigation();
   const navigate = useNavigate();

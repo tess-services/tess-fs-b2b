@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActionFunctionArgs, json, type LoaderFunction, type LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { Form, useActionData, useLoaderData, useNavigate, useNavigation } from "@remix-run/react";
+import { ActionFunctionArgs, type LoaderFunction, type LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { Form, useActionData, useFetcher, useLoaderData, useNavigate, useNavigation, } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FieldErrors } from "react-hook-form";
 import { getValidatedFormData, RemixFormProvider, useRemixForm } from "remix-hook-form";
 import { z } from "zod";
@@ -41,10 +41,10 @@ export const loader: LoaderFunction = async ({ context }: LoaderFunctionArgs) =>
     ).execute();
 
   if (userOrg.length === 0) {
-    return json({ organization: null });
+    return Response.json({ organization: null });
   }
 
-  return json(userOrg[0].organization);
+  return Response.json(userOrg[0].organization);
 };
 
 type ActionData = {
@@ -67,7 +67,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   );
 
   if (errors) {
-    return json({ errors });
+    return Response.json({ errors });
   }
 
   const { id: organizationId, ...organizationData } = data;
@@ -97,9 +97,9 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
       });
     }
 
-    return json({ success: true });
+    return Response.json({ success: true });
   } catch (error) {
-    return json({ error: "Failed to save organization" }, { status: 500 });
+    return Response.json({ error: "Failed to save organization" }, { status: 500 });
   }
 };
 
@@ -110,6 +110,8 @@ export default function OrganizationProfile() {
   const isSubmitting = formNavigation.state === "submitting";
   const actionData = useActionData<ActionData>();
   const { toast } = useToast()
+  const fetcher = useFetcher();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   const form = useRemixForm<OrganizationFormType>({
     mode: "onSubmit",
@@ -136,13 +138,23 @@ export default function OrganizationProfile() {
     }
   }, [actionData]);
 
+  useEffect(() => {
+    if (fetcher.data) {
+      setLogoUrl(fetcher.data as string);
+      form.setValue("logoUrl", fetcher.data as string);
+    }
+  }, [fetcher.data]);
+
+  const logoImageSrc = logoUrl ?? form.getValues().logoUrl;
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">
         {organization ? "Update Organization Profile" : "Create Organization Profile"}
       </h1>
+
       <RemixFormProvider {...form}>
-        <Form method="post" onSubmit={form.handleSubmit} className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:gap-x-8">
+        <Form id="organization-form" method="post" onSubmit={form.handleSubmit} className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:gap-x-8">
           {organization && (
             <input type="hidden" name="id" value={organization.id} />
           )}
@@ -291,25 +303,59 @@ export default function OrganizationProfile() {
             )}
           />
 
-          <div className="flex gap-8 lg:col-span-2 justify-end">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting
-                ? "Saving..."
-                : "Submit"}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => navigate(-1)}
-            >
-              Cancel
-            </Button>
-          </div>
         </Form>
       </RemixFormProvider>
+
+      <fetcher.Form
+        id="image-form"
+        method="post"
+        action="/provider/organization/image"
+        encType="multipart/form-data">
+        <Input
+          id="logo"
+          name="logo"
+          type="file"
+          accept="image/*"
+          required
+          className="mt-4"
+          onChange={(e) => {
+            if (e.target.files?.[0]) {
+              const url = URL.createObjectURL(e.target.files[0]);
+              setLogoUrl(url);
+            }
+          }}
+        />
+        {logoImageSrc && <img src={logoImageSrc} alt="Logo" className="mt-2 w-60" />}
+        <Button
+          type="submit"
+          disabled={!logoUrl || isSubmitting}
+          form="image-form"
+          className="mt-2"
+        >
+          {isSubmitting
+            ? "Uploading..."
+            : "Upload logo"}
+        </Button>
+
+      </fetcher.Form>
+      <div className="flex gap-8 lg:col-span-2 justify-end">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          form="organization-form"
+        >
+          {isSubmitting
+            ? "Saving..."
+            : "Submit"}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => navigate(-1)}
+        >
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 };

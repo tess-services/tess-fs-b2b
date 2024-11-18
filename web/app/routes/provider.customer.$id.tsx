@@ -10,9 +10,7 @@ import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
 import { customerOrganizationMapping, customerTable, userOrganizationTable } from "~/db/schema";
 
-const updateCustomerSchema = createInsertSchema(customerTable, {
-  addedByUserId: z.undefined(),
-}).omit({
+const updateCustomerSchema = createInsertSchema(customerTable).omit({
   id: true,
   createdAt: true,
   updatedAt: true,

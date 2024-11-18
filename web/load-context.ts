@@ -5,6 +5,9 @@ import { type PlatformProxy } from "wrangler";
 
 interface Env {
   DB: D1Database;
+  ORG_BUCKET: R2Bucket
+  ACCOUNT_ID: string;
+  CF_IMAGES_TOKEN: string;
 }
 
 type Cloudflare = Omit<PlatformProxy<Env>, "dispose"> & {

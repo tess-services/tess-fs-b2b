@@ -69,6 +69,23 @@ export const verification = sqliteTable("verification", {
   ),
 });
 
+export const imageFileMetadata = sqliteTable("image_file_metadata", {
+  id: text("id").primaryKey(), // id of the image in image storage.
+
+  uploadedByUserId: text("user_id").notNull().references(() => user.id),
+  organizationId: text("organization_id").references(() => organizationTable.id),
+
+  attachedEntityType: text("attached_entity_type"),
+  attachedEntityId: text("attached_entity_id"),
+
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+});
+
 export const organizationTable = sqliteTable("organization", {
   id: text("id").primaryKey().$defaultFn(() => nanoid()),
   name: text("name").notNull(),

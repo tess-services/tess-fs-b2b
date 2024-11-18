@@ -6,7 +6,8 @@ interface Env {
 	BETTER_AUTH_TRUSTED_ORIGINS: string;
 	RESEND_API_KEY: string;
 	RESEND_SENDER_EMAIL: string;
-	R2_CLIENT_ID: string;
-	R2_CLIENT_SECRET: string;
+	ORG_BUCKET: R2Bucket;
 	DB: D1Database;
+	CF_IMAGES_TOKEN: string;
+	ACCOUNT_ID: string;
 }

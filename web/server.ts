@@ -6,17 +6,8 @@ import { poweredBy } from 'hono/powered-by';
 import { staticAssets } from 'remix-hono/cloudflare';
 import { remix } from "remix-hono/handler";
 
-export type Bindings = {
-  DB: D1Database;
-  BETTER_AUTH_SECRET: string;
-  BETTER_AUTH_URL: string;
-  BETTER_AUTH_TRUSTED_ORIGINS: string;
-  RESEND_API_KEY: string;
-  RESEND_SENDER_EMAIL: string;
-};
-
 export type ContextEnv = {
-  Bindings: Bindings;
+  Bindings: Env;
 };
 
 const app = new Hono<ContextEnv>();
