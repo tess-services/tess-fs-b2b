@@ -23,7 +23,7 @@ export default async function handleRequest(
 ) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), ABORT_DELAY);
-
+  let errorStatusCode: number | null = null;
   const body = await renderToReadableStream(
     <RemixServer
       context={remixContext}
@@ -37,7 +37,7 @@ export default async function handleRequest(
           // Log streaming rendering errors from inside the shell
           console.error(error);
         }
-        responseStatusCode = 500;
+        errorStatusCode = 500;
       },
     }
   );
@@ -51,6 +51,6 @@ export default async function handleRequest(
   responseHeaders.set("Content-Type", "text/html");
   return new Response(body, {
     headers: responseHeaders,
-    status: responseStatusCode,
+    status: errorStatusCode ?? responseStatusCode,
   });
 }

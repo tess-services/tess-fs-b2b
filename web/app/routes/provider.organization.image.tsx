@@ -3,17 +3,6 @@ import { eq } from "drizzle-orm";
 import { imageFileMetadata, userOrganizationTable } from "~/db/schema";
 import { cfImageUploadHandler } from "~/lib/cfImageUploadHandler.server";
 
-// export function ErrorBoundary() {
-//   const error = useRouteError();
-//   return <div>Error: {error instanceof Error ? error.message : 'Unknown error occurred'}</div>;
-// }
-
-// export const loader = async ({ context }: LoaderFunctionArgs) => {
-//   const { db, user } = context.cloudflare.var;
-//   if (!user || !db) return null;
-//   return { ok: true };
-// };
-
 export const action = async ({ request, context }: ActionFunctionArgs) => {
   const formData = await unstable_parseMultipartFormData(
     request,
@@ -45,7 +34,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     }
 
     await db.insert(imageFileMetadata).values({
-      id: fileId.toString(),
+      id: fileId as string,
       uploadedByUserId: user.id,
       organizationId: userOrgs[0].organizationId,
       attachedEntityId: userOrgs[0].organizationId,

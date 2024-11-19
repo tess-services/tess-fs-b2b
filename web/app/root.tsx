@@ -1,5 +1,4 @@
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { json } from "@remix-run/cloudflare";
 import {
   Links,
   LiveReload,
@@ -13,7 +12,7 @@ import {
 import { themeSessionResolver } from "./sessions.server";
 
 import clsx from "clsx";
-import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from "remix-themes";
+import { PreventFlashOnWrongTheme, Theme, ThemeProvider, useTheme } from "remix-themes";
 import { Toaster } from "./components/ui/toaster";
 import "./tailwind.css";
 
@@ -30,10 +29,17 @@ export const links: LinksFunction = () => [
   },
 ];
 
+type LoaderDataType = {
+  theme: Theme;
+  ENV: {
+    BETTER_AUTH_URL: string;
+  };
+};
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const { getTheme } = await themeSessionResolver(request)
 
-  return json({
+  return Response.json({
     theme: getTheme(),
     ENV: {
       BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
@@ -41,11 +47,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-function App() {
-  const data = useLoaderData<typeof loader>();
+function App({ data }: { readonly data: LoaderDataType }) {
   const [theme] = useTheme()
   const bgClass = theme === 'dark' ? "bg-gradient-to-b from-zinc-800 via-stone-800 to-zinc-900" :
-    "bg-gradient-to-b from-silver-100 to-white"
+    "bg-gradient-to-b from-silver-100 to-white";
+
   return (
     <html lang="en" className={clsx(theme)} style={{ colorScheme: theme ?? 'inherit' }} >
       <head>
@@ -76,11 +82,11 @@ function App() {
 }
 
 export default function AppWithProviders() {
-  const data = useLoaderData<typeof loader>()
+  const data = useLoaderData<LoaderDataType>()
 
   return (
     <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme" disableTransitionOnThemeChange={true}>
-      <App />
+      <App data={data} />
     </ThemeProvider>);
 }
 

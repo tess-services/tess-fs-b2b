@@ -1,10 +1,16 @@
-import { json, LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, getTableColumns } from "drizzle-orm";
+import { createSelectSchema } from "drizzle-zod";
 import { Trash2Icon } from "lucide-react";
+import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { customerOrganizationMapping, customerTable, userOrganizationTable } from "~/db/schema";
+
+const selectCustomerSchema = createSelectSchema(customerTable);
+
+type CustomerTable = z.infer<typeof selectCustomerSchema>;
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
@@ -13,19 +19,18 @@ export async function loader({ context }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
 
-  // TODO: Perform join but PICK only customer table data!
-  const userOrgCustomers = await db.select().from(userOrganizationTable)
+  const customers = await db.select({ ...getTableColumns(customerTable) }).from(userOrganizationTable)
     .innerJoin(customerOrganizationMapping, eq(userOrganizationTable.organizationId, customerOrganizationMapping.organizationId))
     .innerJoin(customerTable, eq(customerOrganizationMapping.customerId, customerTable.id))
     .orderBy(desc(customerTable.updatedAt
     ))
     .where(eq(userOrganizationTable.userId, user.id)).execute();
 
-  return json({ customers: userOrgCustomers.map(c => c.customer) });
+  return Response.json({ customers });
 }
 
 export default function Customers() {
-  const { customers } = useLoaderData<typeof loader>();
+  const { customers } = useLoaderData<{ customers: CustomerTable[] }>();
   const navigate = useNavigate();
 
   return (

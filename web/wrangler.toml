@@ -11,8 +11,8 @@ mode = "smart"
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#d1-databases
 [[d1_databases]]
 binding = "DB"
-database_name = "invoice002-db"
-database_id = "895f3ccf-bb50-45ef-8e98-294b8e6a863a"
+database_name = "tess-fs-b2b-db"
+database_id = "73116928-39d4-4fd8-9f9c-edcce1633389a"
 preview_database_id = "LOCAL-INVOICE-001-DB" # Required for Pages local development
 migrations_dir = "migrations"
 
@@ -23,13 +23,13 @@ bucket_name = "invoice001"
 [vars]
 RESEND_SENDER_EMAIL = "anand@tessservices.com.au"
 BETTER_AUTH_URL = "http://localhost:5173"
-BETTER_AUTH_TRUSTED_ORIGINS = "http://localhost:5173,https://tess-fs.pages.dev/"
+BETTER_AUTH_TRUSTED_ORIGINS = "http://localhost:5173,https://tess-fs-b2b.pages.dev/"
 ACCOUNT_ID = "c72ab688bb982db40b378164180a5b94"
 
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "invoice002-db"
-database_id = "895f3ccf-bb50-45ef-8e98-294b8e6a863a"
+database_name = "tess-fs-b2b-db"
+database_id = "73116928-39d4-4fd8-9f9c-edcce1633389a"
 migrations_dir = "migrations"
 
 [[env.production.r2_buckets]]
@@ -37,7 +37,7 @@ binding = "ORG_BUCKET"
 bucket_name = "invoice001"
 
 [env.production.vars]
-BETTER_AUTH_TRUSTED_ORIGINS = "https://tess-fs.pages.dev"
-BETTER_AUTH_URL = "https://tess-fs.pages.dev"
+BETTER_AUTH_TRUSTED_ORIGINS = "https://tess-fs-b2b.pages.dev"
+BETTER_AUTH_URL = "https://tess-fs-b2b.pages.dev"
 RESEND_SENDER_EMAIL = "anand@tessservices.com.au"
 ACCOUNT_ID = "c72ab688bb982db40b378164180a5b94"

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useActionData, useLoaderData, useNavigate } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -38,10 +38,10 @@ export async function loader({ context }: LoaderFunctionArgs) {
     .where(eq(userOrganizationTable.userId, user.id)).execute();
 
   if (organization.length === 0) {
-    return json({ organizationId: null });
+    return Response.json({ organizationId: null });
   }
 
-  return json({ organizationId: organization[0].organizationId });
+  return Response.json({ organizationId: organization[0].organizationId });
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -58,7 +58,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   );
 
   if (errors) {
-    return json({ errors });
+    return Response.json({ errors });
   }
 
   try {
@@ -82,14 +82,14 @@ export async function action({ request, context }: ActionFunctionArgs) {
         customerId: newCust.id,
       })
 
-    return json({ success: true });
+    return Response.json({ success: true });
   } catch (error) {
-    return json({ error: "Failed to save customer" }, { status: 500 });
+    return Response.json({ error: "Failed to save customer" }, { status: 500 });
   }
 }
 
 export default function AddCustomer() {
-  const { organizationId } = useLoaderData<typeof loader>();
+  const { organizationId } = useLoaderData<{ organizationId: string | null }>();
   const navigate = useNavigate();
 
   const form = useRemixForm<CustomerFormType>({

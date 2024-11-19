@@ -1,7 +1,56 @@
+CREATE TABLE `account` (
+	`id` text PRIMARY KEY NOT NULL,
+	`userId` text NOT NULL,
+	`accountId` text NOT NULL,
+	`providerId` text NOT NULL,
+	`accessToken` text,
+	`refreshToken` text,
+	`expiresAt` integer,
+	`password` text,
+	`createdAt` integer DEFAULT (strftime('%s', 'now')),
+	`updatedAt` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `business_category` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`created_at` integer DEFAULT (strftime('%s', 'now'))
+);
+--> statement-breakpoint
+CREATE TABLE `customer_organization_mapping` (
+	`customer_id` text NOT NULL,
+	`organization_id` text NOT NULL,
+	`created_at` integer DEFAULT (strftime('%s', 'now')),
+	PRIMARY KEY(`customer_id`, `organization_id`),
+	FOREIGN KEY (`customer_id`) REFERENCES `customer`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`organization_id`) REFERENCES `organization`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `customer` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`address` text,
+	`suburb` text,
+	`phone` text,
+	`email` text NOT NULL,
+	`is_commercial` integer DEFAULT false,
+	`added_by_user_id` text NOT NULL,
+	`created_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL,
+	`updated_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL,
+	FOREIGN KEY (`added_by_user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `image_file_metadata` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`organization_id` text,
+	`attached_entity_type` text,
+	`attached_entity_id` text,
+	`createdAt` integer DEFAULT (strftime('%s', 'now')),
+	`updatedAt` integer DEFAULT (strftime('%s', 'now')),
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`organization_id`) REFERENCES `organization`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `invoice_detail` (
@@ -16,6 +65,7 @@ CREATE TABLE `invoice_detail` (
 	`gst_rate` real,
 	`amount` real NOT NULL,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
+	`updated_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL,
 	PRIMARY KEY(`invoice_id`, `id`),
 	FOREIGN KEY (`invoice_id`) REFERENCES `invoice`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -66,7 +116,28 @@ CREATE TABLE `organization` (
 	`logo_url` text,
 	`email` text NOT NULL,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
+	`updated_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL,
 	`current_invoice_number` integer DEFAULT 0 NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `session` (
+	`id` text PRIMARY KEY NOT NULL,
+	`userId` text NOT NULL,
+	`expiresAt` integer NOT NULL,
+	`ipAddress` text,
+	`userAgent` text,
+	`createdAt` integer DEFAULT (strftime('%s', 'now')),
+	`updatedAt` integer DEFAULT (strftime('%s', 'now'))
+);
+--> statement-breakpoint
+CREATE TABLE `user` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`email` text NOT NULL,
+	`emailVerified` integer DEFAULT false,
+	`image` text,
+	`createdAt` integer DEFAULT (strftime('%s', 'now')),
+	`updatedAt` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
 CREATE TABLE `user_organization` (
@@ -88,5 +159,15 @@ CREATE TABLE `user_profile` (
 	`address` text NOT NULL,
 	`suburb` text,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
+	`updated_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `verification` (
+	`id` text PRIMARY KEY NOT NULL,
+	`identifier` text NOT NULL,
+	`value` text NOT NULL,
+	`expiresAt` integer NOT NULL,
+	`createdAt` integer DEFAULT (strftime('%s', 'now')),
+	`updatedAt` integer DEFAULT (strftime('%s', 'now'))
 );

@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useActionData, useLoaderData, useNavigate } from "@remix-run/react";
 import { and, eq } from "drizzle-orm";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { FieldErrors } from "react-hook-form";
 import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { z } from "zod";
@@ -16,6 +16,8 @@ const updateCustomerSchema = createInsertSchema(customerTable).omit({
   updatedAt: true,
   addedByUserId: true,
 });
+const selectCustomerScehma = createSelectSchema(customerTable);
+type CustomerTable = z.infer<typeof selectCustomerScehma>;
 
 const resolver = zodResolver(updateCustomerSchema);
 type CustomerFormType = z.infer<typeof updateCustomerSchema>;
@@ -40,7 +42,6 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
 
   if (userOrg.length === 0) {
     throw new Error("Unauthorized or Invalid ID");
-
   }
 
   // Get customer data
@@ -57,7 +58,7 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     throw new Error("Customer not found");
   }
 
-  return json({
+  return Response.json({
     organizationId: userOrg[0].organizationId,
     customer: customers[0].customer
   });
@@ -78,7 +79,7 @@ export async function action({ params, request, context }: ActionFunctionArgs) {
   );
 
   if (errors) {
-    return json({ errors });
+    return Response.json({ errors });
   }
 
   try {
@@ -109,14 +110,14 @@ export async function action({ params, request, context }: ActionFunctionArgs) {
       })
       .where(eq(customerTable.id, id));
 
-    return json({ success: true });
+    return Response.json({ success: true });
   } catch (error) {
-    return json({ error: "Failed to update customer" }, { status: 500 });
+    return Response.json({ error: "Failed to update customer" }, { status: 500 });
   }
 }
 
 export default function EditCustomer() {
-  const { organizationId, customer } = useLoaderData<typeof loader>();
+  const { organizationId, customer } = useLoaderData<{ organizationId: string, customer: CustomerTable }>();
   const navigate = useNavigate();
   const actionData = useActionData<ActionData>();
 

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { verifyEmail } from "~/lib/auth.client";
 
 export default function VerifyEmail() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
