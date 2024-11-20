@@ -9,7 +9,7 @@ import { z } from "zod";
 import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
 
-import { customerOrganizationMapping, customerTable, userOrganizationTable } from "~/db/schema";
+import { customerTable, userOrganizationTable } from "~/db/schema";
 
 const insertCustomerSchema = createInsertSchema(customerTable, {
   createdAt: z.date({ coerce: true }),
@@ -71,16 +71,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     const userOrg = userOrgs[0];
 
-    const [newCust] = await db.insert(customerTable).values({
+    await db.insert(customerTable).values({
       ...data,
+      organizationId: userOrg.organizationId,
       addedByUserId: user.id,
     }).returning();
-
-    await db.insert(customerOrganizationMapping)
-      .values({
-        organizationId: userOrg.organizationId,
-        customerId: newCust.id,
-      })
 
     return Response.json({ success: true });
   } catch (error) {

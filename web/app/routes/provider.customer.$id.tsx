@@ -8,7 +8,7 @@ import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { z } from "zod";
 import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
-import { customerOrganizationMapping, customerTable, userOrganizationTable } from "~/db/schema";
+import { customerTable, userOrganizationTable } from "~/db/schema";
 
 const updateCustomerSchema = createInsertSchema(customerTable).omit({
   id: true,
@@ -47,9 +47,8 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   // Get customer data
   const customers = await db.select()
     .from(customerTable)
-    .innerJoin(customerOrganizationMapping, eq(customerTable.id, customerOrganizationMapping.customerId))
     .where(
-      and(eq(customerOrganizationMapping.organizationId, userOrg[0].organizationId),
+      and(eq(customerTable.organizationId, userOrg[0].organizationId),
         eq(customerTable.id, id))
     )
     .execute();
@@ -60,7 +59,7 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
 
   return Response.json({
     organizationId: userOrg[0].organizationId,
-    customer: customers[0].customer
+    customer: customers[0]
   });
 }
 
@@ -91,24 +90,13 @@ export async function action({ params, request, context }: ActionFunctionArgs) {
       throw new Error("User has no org assigned");
     }
 
-    const customerOrg = await db.select()
-      .from(customerOrganizationMapping)
-      .where(
-        and(
-          eq(customerOrganizationMapping.customerId, id),
-          eq(customerOrganizationMapping.organizationId, userOrg[0].organizationId)))
-      .execute();
-
-    if (customerOrg.length === 0) {
-      throw new Error("Unauthorized to edit this customer");
-    }
     // Update customer
     await db.update(customerTable)
       .set({
         ...data,
         updatedAt: new Date(),
       })
-      .where(eq(customerTable.id, id));
+      .where(and(eq(customerTable.id, id), eq(customerTable.organizationId, userOrg[0].organizationId)));
 
     return Response.json({ success: true });
   } catch (error) {

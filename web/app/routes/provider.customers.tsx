@@ -1,12 +1,12 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
-import { desc, eq, getTableColumns } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
 import { Trash2Icon } from "lucide-react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { customerOrganizationMapping, customerTable, userOrganizationTable } from "~/db/schema";
+import { customerTable, userOrganizationTable } from "~/db/schema";
 
 const selectCustomerSchema = createSelectSchema(customerTable);
 
@@ -19,12 +19,13 @@ export async function loader({ context }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
 
-  const customers = await db.select({ ...getTableColumns(customerTable) }).from(userOrganizationTable)
-    .innerJoin(customerOrganizationMapping, eq(userOrganizationTable.organizationId, customerOrganizationMapping.organizationId))
-    .innerJoin(customerTable, eq(customerOrganizationMapping.customerId, customerTable.id))
-    .orderBy(desc(customerTable.updatedAt
-    ))
-    .where(eq(userOrganizationTable.userId, user.id)).execute();
+  const userOrg = await db.select().from(userOrganizationTable).where(eq(userOrganizationTable.userId, user.id)).execute();
+
+  const customers = await db.select().from(customerTable)
+    .orderBy(desc(customerTable.updatedAt))
+    .where(and(
+      eq(userOrganizationTable.userId, user.id),
+      eq(customerTable.organizationId, userOrg[0].organizationId))).execute();
 
   return Response.json({ customers });
 }
