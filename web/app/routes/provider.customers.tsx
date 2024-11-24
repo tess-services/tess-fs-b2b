@@ -6,7 +6,7 @@ import { Trash2Icon } from "lucide-react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { customerTable, userOrganizationTable } from "~/db/schema";
+import { customerTable, organizationMembership } from "~/db/schema";
 
 const selectCustomerSchema = createSelectSchema(customerTable);
 
@@ -19,13 +19,22 @@ export async function loader({ context }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
 
-  const userOrg = await db.select().from(userOrganizationTable).where(eq(userOrganizationTable.userId, user.id)).execute();
+  // First get the user's organization
+  const userOrg = await db.select()
+    .from(organizationMembership)
+    .where(eq(organizationMembership.userId, user.id))
+    .execute();
 
-  const customers = await db.select().from(customerTable)
+  if (!userOrg.length) {
+    throw new Error("No organization found for user");
+  }
+
+  // Then get customers for that organization
+  const customers = await db.select()
+    .from(customerTable)
+    .where(eq(customerTable.organizationId, userOrg[0].organizationId))
     .orderBy(desc(customerTable.updatedAt))
-    .where(and(
-      eq(userOrganizationTable.userId, user.id),
-      eq(customerTable.organizationId, userOrg[0].organizationId))).execute();
+    .execute();
 
   return Response.json({ customers });
 }

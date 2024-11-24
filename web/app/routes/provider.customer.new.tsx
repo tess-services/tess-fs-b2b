@@ -9,12 +9,13 @@ import { z } from "zod";
 import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
 
-import { customerTable, userOrganizationTable } from "~/db/schema";
+import { customerTable, organizationMembership } from "~/db/schema";
 
 const insertCustomerSchema = createInsertSchema(customerTable, {
   createdAt: z.date({ coerce: true }),
   updatedAt: z.date({ coerce: true }),
   addedByUserId: z.undefined(),
+  organizationId: z.undefined(),
 });
 
 const resolver = zodResolver(insertCustomerSchema);
@@ -34,8 +35,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
 
-  const organization = await db.select().from(userOrganizationTable)
-    .where(eq(userOrganizationTable.userId, user.id)).execute();
+  const organization = await db.select().from(organizationMembership)
+    .where(eq(organizationMembership.userId, user.id)).execute();
 
   if (organization.length === 0) {
     return Response.json({ organizationId: null });
@@ -62,8 +63,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
   }
 
   try {
-    const userOrgs = await db.select().from(userOrganizationTable)
-      .where(eq(userOrganizationTable.userId, user.id)).execute();
+    const userOrgs = await db.select().from(organizationMembership)
+      .where(eq(organizationMembership.userId, user.id)).execute();
 
     if (userOrgs.length === 0) {
       throw new Error("User has no org assigned");
@@ -90,9 +91,6 @@ export default function AddCustomer() {
   const form = useRemixForm<CustomerFormType>({
     mode: "onSubmit",
     resolver,
-    defaultValues: {
-      isCommercial: false,
-    },
   });
   const actionData = useActionData<ActionData>();
 

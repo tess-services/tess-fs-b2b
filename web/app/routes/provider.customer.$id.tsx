@@ -8,7 +8,7 @@ import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { z } from "zod";
 import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
-import { customerTable, userOrganizationTable } from "~/db/schema";
+import { customerTable, organizationMembership } from "~/db/schema";
 
 const updateCustomerSchema = createInsertSchema(customerTable).omit({
   id: true,
@@ -37,8 +37,8 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   }
 
   // Get user's organization
-  const userOrg = await db.select().from(userOrganizationTable)
-    .where(eq(userOrganizationTable.userId, user.id)).execute();
+  const userOrg = await db.select().from(organizationMembership)
+    .where(eq(organizationMembership.userId, user.id)).execute();
 
   if (userOrg.length === 0) {
     throw new Error("Unauthorized or Invalid ID");
@@ -83,8 +83,8 @@ export async function action({ params, request, context }: ActionFunctionArgs) {
 
   try {
     // Verify user has access to this customer via organization
-    const userOrg = await db.select().from(userOrganizationTable)
-      .where(eq(userOrganizationTable.userId, user.id)).execute();
+    const userOrg = await db.select().from(organizationMembership)
+      .where(eq(organizationMembership.userId, user.id)).execute();
 
     if (userOrg.length === 0) {
       throw new Error("User has no org assigned");

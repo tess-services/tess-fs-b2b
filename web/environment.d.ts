@@ -11,6 +11,7 @@ declare global {
   interface Window {
     ENV: {
       BETTER_AUTH_URL: string;
+      SUPER_ADMIN_EMAILS: string;
     };
   }
 }

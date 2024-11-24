@@ -8,6 +8,12 @@ interface Env {
   ORG_BUCKET: R2Bucket
   ACCOUNT_ID: string;
   CF_IMAGES_TOKEN: string;
+  BETTER_AUTH_URL: string;
+  BETTER_AUTH_SECRET: string;
+  BETTER_AUTH_TRUSTED_ORIGINS: string;
+  RESEND_API_KEY: string;
+  RESEND_SENDER_EMAIL: string;
+  SUPER_ADMIN_EMAILS: string;
 }
 
 type Cloudflare = Omit<PlatformProxy<Env>, "dispose"> & {

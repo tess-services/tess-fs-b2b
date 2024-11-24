@@ -1,7 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 
-
-
 export async function loader({ context }: LoaderFunctionArgs) {
   return Response.json(null, { status: 404 });
 }

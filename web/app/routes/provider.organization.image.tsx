@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, unstable_parseMultipartFormData } from "@remix-run/cloudflare";
 import { eq } from "drizzle-orm";
-import { imageFileMetadata, userOrganizationTable } from "~/db/schema";
+import { imageFileMetadata, organizationMembership } from "~/db/schema";
 import { cfImageUploadHandler } from "~/lib/cfImageUploadHandler.server";
 
 export const action = async ({ request, context }: ActionFunctionArgs) => {
@@ -21,8 +21,8 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   }
 
   try {
-    const userOrgs = await db.select().from(userOrganizationTable)
-      .where(eq(userOrganizationTable.userId, user.id))
+    const userOrgs = await db.select().from(organizationMembership)
+      .where(eq(organizationMembership.userId, user.id))
       .execute()
       .catch((error) => {
         console.error('Database query failed:', error);

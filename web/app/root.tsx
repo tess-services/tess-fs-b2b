@@ -33,16 +33,18 @@ type LoaderDataType = {
   theme: Theme;
   ENV: {
     BETTER_AUTH_URL: string;
+    SUPER_ADMIN_EMAILS: string;
   };
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const { getTheme } = await themeSessionResolver(request)
 
   return Response.json({
     theme: getTheme(),
     ENV: {
-      BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+      BETTER_AUTH_URL: context.cloudflare.env.BETTER_AUTH_URL,
+      SUPER_ADMIN_EMAILS: context.cloudflare.env.SUPER_ADMIN_EMAILS,
     },
   });
 }

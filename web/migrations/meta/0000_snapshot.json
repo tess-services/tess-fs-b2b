@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6ebbf5b2-9643-4f28-90f3-f6f45d9795be",
+  "id": "abaacbe6-f478-4f55-826b-774f4f7e3eac",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -100,105 +100,6 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "business_category": {
-      "name": "business_category",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "customer_organization_mapping": {
-      "name": "customer_organization_mapping",
-      "columns": {
-        "customer_id": {
-          "name": "customer_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "customer_organization_mapping_customer_id_customer_id_fk": {
-          "name": "customer_organization_mapping_customer_id_customer_id_fk",
-          "tableFrom": "customer_organization_mapping",
-          "tableTo": "customer",
-          "columnsFrom": [
-            "customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "customer_organization_mapping_organization_id_organization_id_fk": {
-          "name": "customer_organization_mapping_organization_id_organization_id_fk",
-          "tableFrom": "customer_organization_mapping",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "customer_organization_mapping_pk": {
-          "columns": [
-            "customer_id",
-            "organization_id"
-          ],
-          "name": "customer_organization_mapping_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
     "customer": {
       "name": "customer",
       "columns": {
@@ -244,31 +145,30 @@
           "notNull": true,
           "autoincrement": false
         },
-        "is_commercial": {
-          "name": "is_commercial",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
-        "added_by_user_id": {
-          "name": "added_by_user_id",
+        "organizationId": {
+          "name": "organizationId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "addedByUserId": {
+          "name": "addedByUserId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "(strftime('%s', 'now'))"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -278,12 +178,25 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "customer_added_by_user_id_user_id_fk": {
-          "name": "customer_added_by_user_id_user_id_fk",
+        "customer_organizationId_organization_id_fk": {
+          "name": "customer_organizationId_organization_id_fk",
+          "tableFrom": "customer",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organizationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "customer_addedByUserId_user_id_fk": {
+          "name": "customer_addedByUserId_user_id_fk",
           "tableFrom": "customer",
           "tableTo": "user",
           "columnsFrom": [
-            "added_by_user_id"
+            "addedByUserId"
           ],
           "columnsTo": [
             "id"
@@ -296,8 +209,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "image_file_metadata": {
-      "name": "image_file_metadata",
+    "imageFileMetadata": {
+      "name": "imageFileMetadata",
       "columns": {
         "id": {
           "name": "id",
@@ -306,29 +219,29 @@
           "notNull": true,
           "autoincrement": false
         },
-        "user_id": {
-          "name": "user_id",
+        "uploadedByUserId": {
+          "name": "uploadedByUserId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "organization_id": {
-          "name": "organization_id",
+        "organizationId": {
+          "name": "organizationId",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "attached_entity_type": {
-          "name": "attached_entity_type",
+        "attachedEntityType": {
+          "name": "attachedEntityType",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "attached_entity_id": {
-          "name": "attached_entity_id",
+        "attachedEntityId": {
+          "name": "attachedEntityId",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -353,12 +266,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "image_file_metadata_user_id_user_id_fk": {
-          "name": "image_file_metadata_user_id_user_id_fk",
-          "tableFrom": "image_file_metadata",
+        "imageFileMetadata_uploadedByUserId_user_id_fk": {
+          "name": "imageFileMetadata_uploadedByUserId_user_id_fk",
+          "tableFrom": "imageFileMetadata",
           "tableTo": "user",
           "columnsFrom": [
-            "user_id"
+            "uploadedByUserId"
           ],
           "columnsTo": [
             "id"
@@ -366,12 +279,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "image_file_metadata_organization_id_organization_id_fk": {
-          "name": "image_file_metadata_organization_id_organization_id_fk",
-          "tableFrom": "image_file_metadata",
+        "imageFileMetadata_organizationId_organization_id_fk": {
+          "name": "imageFileMetadata_organizationId_organization_id_fk",
+          "tableFrom": "imageFileMetadata",
           "tableTo": "organization",
           "columnsFrom": [
-            "organization_id"
+            "organizationId"
           ],
           "columnsTo": [
             "id"
@@ -384,126 +297,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "invoice_detail": {
-      "name": "invoice_detail",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "invoice_id": {
-          "name": "invoice_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "product_id": {
-          "name": "product_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "service_id": {
-          "name": "service_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "quantity": {
-          "name": "quantity",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "unit_price": {
-          "name": "unit_price",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "discount": {
-          "name": "discount",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "gst_rate": {
-          "name": "gst_rate",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "amount": {
-          "name": "amount",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "invoice_detail_invoice_id_invoice_id_fk": {
-          "name": "invoice_detail_invoice_id_invoice_id_fk",
-          "tableFrom": "invoice_detail",
-          "tableTo": "invoice",
-          "columnsFrom": [
-            "invoice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "invoice_detail_pk": {
-          "columns": [
-            "invoice_id",
-            "id"
-          ],
-          "name": "invoice_detail_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "invoice": {
-      "name": "invoice",
+    "invitation": {
+      "name": "invitation",
       "columns": {
         "id": {
           "name": "id",
@@ -512,255 +307,61 @@
           "notNull": true,
           "autoincrement": false
         },
-        "organization_id": {
-          "name": "organization_id",
+        "email": {
+          "name": "email",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "customer_id": {
-          "name": "customer_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "invoice_number": {
-          "name": "invoice_number",
+        "organizationId": {
+          "name": "organizationId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "customer_name": {
-          "name": "customer_name",
+        "role": {
+          "name": "role",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "customer_address": {
-          "name": "customer_address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "customer_suburb": {
-          "name": "customer_suburb",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "customer_email": {
-          "name": "customer_email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "phone": {
-          "name": "phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "invoice_date": {
-          "name": "invoice_date",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        },
-        "due_date": {
-          "name": "due_date",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
         },
         "status": {
           "name": "status",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "'draft'"
-        },
-        "sent_on": {
-          "name": "sent_on",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
-        "paid_on": {
-          "name": "paid_on",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "total_amount": {
-          "name": "total_amount",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "currency": {
-          "name": "currency",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "generated_by_user_id": {
-          "name": "generated_by_user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
+        "expiresAt": {
+          "name": "expiresAt",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false,
           "default": "(strftime('%s', 'now'))"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(strftime('%s', 'now'))"
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "invoice_organization_id_organization_id_fk": {
-          "name": "invoice_organization_id_organization_id_fk",
-          "tableFrom": "invoice",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "invoice_customer_id_customer_id_fk": {
-          "name": "invoice_customer_id_customer_id_fk",
-          "tableFrom": "invoice",
-          "tableTo": "customer",
-          "columnsFrom": [
-            "customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "invoice_generated_by_user_id_user_id_fk": {
-          "name": "invoice_generated_by_user_id_user_id_fk",
-          "tableFrom": "invoice",
-          "tableTo": "user",
-          "columnsFrom": [
-            "generated_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "organization_business_category": {
-      "name": "organization_business_category",
-      "columns": {
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "business_category_id": {
-          "name": "business_category_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "organization_business_category_organization_id_organization_id_fk": {
-          "name": "organization_business_category_organization_id_organization_id_fk",
-          "tableFrom": "organization_business_category",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "organization_business_category_business_category_id_business_category_id_fk": {
-          "name": "organization_business_category_business_category_id_business_category_id_fk",
-          "tableFrom": "organization_business_category",
-          "tableTo": "business_category",
-          "columnsFrom": [
-            "business_category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "organization_business_category_pk": {
-          "columns": [
-            "organization_id",
-            "business_category_id"
-          ],
-          "name": "organization_business_category_pk"
-        }
-      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -781,43 +382,50 @@
           "notNull": true,
           "autoincrement": false
         },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "logo": {
+          "name": "logo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "abn": {
           "name": "abn",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "phone": {
           "name": "phone",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "address": {
           "name": "address",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "invoice_prefix": {
-          "name": "invoice_prefix",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "trade_currency": {
-          "name": "trade_currency",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "logo_url": {
-          "name": "logo_url",
+        "tradeCurrency": {
+          "name": "tradeCurrency",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -827,32 +435,24 @@
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
           "default": "(strftime('%s', 'now'))"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "(strftime('%s', 'now'))"
-        },
-        "current_invoice_number": {
-          "name": "current_invoice_number",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
         }
       },
       "indexes": {},
@@ -894,6 +494,13 @@
         },
         "userAgent": {
           "name": "userAgent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -961,6 +568,14 @@
           "notNull": false,
           "autoincrement": false
         },
+        "isSuperAdmin": {
+          "name": "isSuperAdmin",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "integer",
@@ -984,83 +599,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "user_organization": {
-      "name": "user_organization",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "is_owner": {
-          "name": "is_owner",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "(strftime('%s', 'now'))"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "user_organization_user_id_user_id_fk": {
-          "name": "user_organization_user_id_user_id_fk",
-          "tableFrom": "user_organization",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "user_organization_organization_id_organization_id_fk": {
-          "name": "user_organization_organization_id_organization_id_fk",
-          "tableFrom": "user_organization",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "user_organization_pk": {
-          "columns": [
-            "user_id",
-            "organization_id"
-          ],
-          "name": "user_organization_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "user_profile": {
-      "name": "user_profile",
+    "member": {
+      "name": "member",
       "columns": {
         "id": {
           "name": "id",
@@ -1069,22 +609,111 @@
           "notNull": true,
           "autoincrement": false
         },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "first_name": {
-          "name": "first_name",
+        "organizationId": {
+          "name": "organizationId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "last_name": {
-          "name": "last_name",
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "isOwner": {
+          "name": "isOwner",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%s', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "member_userId_user_id_fk": {
+          "name": "member_userId_user_id_fk",
+          "tableFrom": "member",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "member_organizationId_organization_id_fk": {
+          "name": "member_organizationId_organization_id_fk",
+          "tableFrom": "member",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organizationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "userProfile": {
+      "name": "userProfile",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "firstName": {
+          "name": "firstName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lastName": {
+          "name": "lastName",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -1111,16 +740,16 @@
           "notNull": false,
           "autoincrement": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
           "default": "(strftime('%s', 'now'))"
         },
-        "updated_at": {
-          "name": "updated_at",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -1130,12 +759,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_profile_user_id_user_id_fk": {
-          "name": "user_profile_user_id_user_id_fk",
-          "tableFrom": "user_profile",
+        "userProfile_userId_user_id_fk": {
+          "name": "userProfile_userId_user_id_fk",
+          "tableFrom": "userProfile",
           "tableTo": "user",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"

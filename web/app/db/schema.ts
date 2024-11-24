@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { nanoid } from 'nanoid';
 
 export const user = sqliteTable("user", {
@@ -9,7 +9,7 @@ export const user = sqliteTable("user", {
   email: text("email").notNull(),
   emailVerified: integer("emailVerified", { mode: "boolean" }).default(false),
   image: text("image"), // user's image url
-
+  isSuperAdmin: integer("isSuperAdmin", { mode: "boolean" }).default(false),
   createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
   ),
@@ -26,6 +26,7 @@ export const session = sqliteTable("session", {
 
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
+  token: text("token"),
 
   createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
@@ -69,66 +70,55 @@ export const verification = sqliteTable("verification", {
   ),
 });
 
-export const imageFileMetadata = sqliteTable("image_file_metadata", {
-  id: text("id").primaryKey(), // id of the image in image storage.
-
-  uploadedByUserId: text("user_id").notNull().references(() => user.id),
-  organizationId: text("organization_id").references(() => organizationTable.id),
-
-  attachedEntityType: text("attached_entity_type"),
-  attachedEntityId: text("attached_entity_id"),
-
-  createdAt: integer("createdAt", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-  updatedAt: integer("updatedAt", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-});
-
 export const organizationTable = sqliteTable("organization", {
   id: text("id").primaryKey().$defaultFn(() => nanoid()),
   name: text("name").notNull(),
-  abn: text("abn").notNull(),
-  phone: text("phone").notNull(),
-  businessAddress: text("address").notNull(),
-  tradeCurrency: text('trade_currency').notNull(), // Currency (e.g., USD)
-  logoUrl: text('logo_url'),
-  email: text("email").notNull(),
+  slug: text("slug").notNull(),
+  logo: text('logo'),
+  metadata: text('metadata'),
 
-  createdAt: integer("created_at", { mode: "timestamp" }).default(
+  abn: text("abn"),
+  phone: text("phone"),
+  businessAddress: text("address"),
+  tradeCurrency: text('tradeCurrency'), // Currency (e.g., USD)
+  email: text("email"),
+
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
   ).notNull(),
 });
 
 // There will be many to many relationship between user and organization,
 // so we need a join table to represent this relationship.
-export const userOrganizationTable = sqliteTable("user_organization", {
-  userId: text("user_id").notNull().references(() => user.id),
-  organizationId: text("organization_id").notNull().references(() => organizationTable.id),
-  isOwner: integer("is_owner", { mode: 'boolean' }).notNull().default(false),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`)
-}, (table) => ({
-  pk: primaryKey({ name: 'user_organization_pk', columns: [table.userId, table.organizationId] })
-}));
-
-export const userProfileTable = sqliteTable("user_profile", {
+export const organizationMembership = sqliteTable("member", {
   id: text("id").primaryKey().$defaultFn(() => nanoid()),
-  userId: text("user_id").notNull().references(() => user.id),
+  userId: text("userId").notNull().references(() => user.id),
+  organizationId: text("organizationId").notNull().references(() => organizationTable.id),
+  role: text("role").notNull(),
+  isOwner: integer("isOwner", { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).default(
+      sql`(strftime('%s', 'now'))`,
+    ).notNull(),
+});
 
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
+export const userProfileTable = sqliteTable("userProfile", {
+  id: text("id").primaryKey().$defaultFn(() => nanoid()),
+  userId: text("userId").notNull().references(() => user.id),
+
+  firstName: text("firstName").notNull(),
+  lastName: text("lastName").notNull(),
   phone: text("phone").notNull(),
   address: text("address").notNull(),
   suburb: text("suburb"),
 
-  createdAt: integer("created_at", { mode: "timestamp" }).default(
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
   ),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
   ).notNull(),
 });
@@ -141,16 +131,51 @@ export const customerTable = sqliteTable("customer", {
   suburb: text("suburb"),
   phone: text("phone"),
   email: text("email").notNull(),
-  isCommercial: integer("is_commercial", { mode: "boolean" }).default(false),
-  organizationId: text("organization_id").notNull().references(() => organizationTable.id),
+  organizationId: text("organizationId").notNull().references(() => organizationTable.id),
 
-  addedByUserId: text("added_by_user_id").notNull().references(() => user.id),
+  addedByUserId: text("addedByUserId").notNull().references(() => user.id),
 
-  createdAt: integer("created_at", { mode: "timestamp" }).default(
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
   ).notNull(),
 
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
   ).notNull(),
+});
+
+export const invitation = sqliteTable("invitation", {
+  id: text("id").primaryKey().$defaultFn(() => nanoid()),
+  
+  email: text("email").notNull(),
+  organizationId: text("organizationId").notNull(),
+  role: text("role").notNull(),
+
+  status: text("status").notNull(),
+  
+  expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+  
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+});
+
+export const imageFileMetadata = sqliteTable("imageFileMetadata", {
+  id: text("id").primaryKey(), // id of the image in image storage.
+
+  uploadedByUserId: text("uploadedByUserId").notNull().references(() => user.id),
+  organizationId: text("organizationId").references(() => organizationTable.id),
+
+  attachedEntityType: text("attachedEntityType"),
+  attachedEntityId: text("attachedEntityId"),
+
+  createdAt: integer("createdAt", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
 });
