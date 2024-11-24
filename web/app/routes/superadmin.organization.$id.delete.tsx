@@ -6,7 +6,6 @@ import { isSuperAdmin } from "~/lib/isSuperAdmin";
 
 export const action = async ({ params, context }: ActionFunctionArgs) => {
   const { db, user } = context.cloudflare.var;
-  const { SUPER_ADMIN_EMAILS } = context.cloudflare.env;
 
   const organizationId = params.id;
 
@@ -14,7 +13,7 @@ export const action = async ({ params, context }: ActionFunctionArgs) => {
     throw new Error("Customer ID is required");
   }
 
-  if (!user || !db || !isSuperAdmin(SUPER_ADMIN_EMAILS, user.email)) {
+  if (!user || !db) {
     throw new Error("Unauthorized");
   }
 

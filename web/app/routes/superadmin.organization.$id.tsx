@@ -30,9 +30,8 @@ export type ActionData = {
 
 export async function loader({ params, context }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
-  const { SUPER_ADMIN_EMAILS } = context.cloudflare.env;
 
-  if (!db || !user || !isSuperAdmin(SUPER_ADMIN_EMAILS, user.email)) {
+  if (!db || !user) {
     throw new Error("Unauthorized");
   }
 
@@ -53,9 +52,8 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
 
 export async function action({ request, context, params }: ActionFunctionArgs) {
   const { db, user } = context.cloudflare.var;
-  const { SUPER_ADMIN_EMAILS } = context.cloudflare.env;
 
-  if (!user || !isSuperAdmin(SUPER_ADMIN_EMAILS, user?.email) || !db) {
+  if (!user || !db) {
     throw new Error("Unauthorized");
   }
 

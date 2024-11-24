@@ -15,9 +15,8 @@ type OrganizationRow = z.infer<typeof selectCustomerSchema>;
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
-  const { SUPER_ADMIN_EMAILS } = context.cloudflare.env;
 
-  if (!user || !db || !isSuperAdmin(SUPER_ADMIN_EMAILS, user.email)) {
+  if (!user || !db) {
     throw new Error("Unauthorized");
   }
 

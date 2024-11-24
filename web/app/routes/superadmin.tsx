@@ -1,10 +1,11 @@
+import { LoaderFunctionArgs } from "@remix-run/cloudflare"
 import { NavLink, Outlet } from "@remix-run/react"
-import { Menu, UserCircle } from "lucide-react"
+import { Menu } from "lucide-react"
 import { useState } from "react"
-import { ModeToggle } from "~/components/mode-toggle"
 import { Button } from "~/components/ui/button"
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "~/components/ui/navigation-menu"
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet"
+import { isSuperAdmin } from "~/lib/isSuperAdmin"
 
 const isMenuActive = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-2 text-sm font-medium relative ${isActive
@@ -12,6 +13,17 @@ const isMenuActive = ({ isActive }: { isActive: boolean }) =>
     : 'text-muted-foreground'
   }`
 
+  export async function loader({ context }: LoaderFunctionArgs) {
+    const { db, user } = context.cloudflare.var;
+    const { SUPER_ADMIN_EMAILS } = context.cloudflare.env;
+  
+    if (!user || !db || !isSuperAdmin(SUPER_ADMIN_EMAILS, user.email)) {
+      throw new Error("Unauthorized");
+    }
+  
+    return null;
+  }
+  
 export default function ProviderLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
