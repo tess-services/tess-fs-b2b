@@ -2,7 +2,6 @@
 import { ActionFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { and, eq } from "drizzle-orm";
 import { organizationTable } from "~/db/schema";
-import { isSuperAdmin } from "~/lib/isSuperAdmin";
 
 export const action = async ({ params, context }: ActionFunctionArgs) => {
   const { db, user } = context.cloudflare.var;

@@ -1,17 +1,26 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { Link, useActionData, useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { desc } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
 import { Trash2Icon } from "lucide-react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { organizationTable } from "~/db/schema";
-import { isSuperAdmin } from "~/lib/isSuperAdmin";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { organizationMembership, organizationTable } from "~/db/schema";
+import { sql } from "drizzle-orm/sql";
+import { InviteOrgOwner } from "~/components/invite-org-owner";
+import { selectOrganizationSchema } from "~/lib/organization";
 
-const selectCustomerSchema = createSelectSchema(organizationTable);
-
-type OrganizationRow = z.infer<typeof selectCustomerSchema>;
+type OrganizationRow = z.infer<typeof selectOrganizationSchema> & {
+  hasOwner: boolean;
+};
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
@@ -20,7 +29,19 @@ export async function loader({ context }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
 
-  const organizations = await db.select()
+  const organizations = await db
+    .select({
+      id: organizationTable.id,
+      name: organizationTable.name,
+      slug: organizationTable.slug,
+      logo: organizationTable.logo,
+      metadata: organizationTable.metadata,
+      hasOwner: sql<boolean>`EXISTS (
+        SELECT 1 FROM ${organizationMembership} 
+        WHERE ${organizationMembership.organizationId} = ${organizationTable.id} 
+        AND ${organizationMembership.role} = 'owner'
+      )`.as("hasOwner"),
+    })
     .from(organizationTable)
     .orderBy(desc(organizationTable.updatedAt))
     .execute();
@@ -29,16 +50,18 @@ export async function loader({ context }: LoaderFunctionArgs) {
 }
 
 export default function Organizations() {
-  const { organizations } = useLoaderData<{ organizations: OrganizationRow[] }>();
+  const { organizations } = useLoaderData<{
+    organizations: OrganizationRow[];
+  }>();
   const navigate = useNavigate();
 
   return (
     <div className="mx-auto lg:max-w-7xl lg:p-0 p-3">
       <div className="flex justify-between">
-        <h1 className="text-2xl font-bold mb-6">
-          Organizations
-        </h1>
-        <Button onClick={() => navigate("/superadmin/organization/new")}>Add new organization</Button>
+        <h1 className="text-2xl font-bold mb-6">Organizations</h1>
+        <Button onClick={() => navigate("/superadmin/organization/new")}>
+          Add new organization
+        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -46,25 +69,42 @@ export default function Organizations() {
           <TableHead>Address</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Mobile</TableHead>
+          <TableHead>Has owner</TableHead>
         </TableHeader>
         <TableBody>
-          {
-            organizations.map(c => {
-              return (<TableRow key={c.id}>
-                <TableCell className="underline decoration-2 decoration-blue-400 hover:decoration-yellow-400"><Link to={`/superadmin/organization/${c.id}`}>{c.name}</Link></TableCell>
-                <TableCell>{c.businessAddress}</TableCell>
-                <TableCell>{c.email}</TableCell>
-                <TableCell>{c.phone}</TableCell>
+          {organizations.map((org) => {
+            return (
+              <TableRow key={org.id}>
+                <TableCell className="underline decoration-2 decoration-blue-400 hover:decoration-yellow-400">
+                  <Link to={`/superadmin/organization/${org.id}`}>
+                    {org.name}
+                  </Link>
+                </TableCell>
+                <TableCell>{org.metadata?.businessAddress}</TableCell>
+                <TableCell>{org.metadata?.email}</TableCell>
+                <TableCell>{org.metadata?.phone}</TableCell>
                 <TableCell>
-                  <form method="post" action={`/superadmin/organization/${c.id}/delete`}>
-                    <Button variant="outline" size="icon" type="submit"><Trash2Icon /></Button>
+                  {org.hasOwner ? (
+                    "Yes"
+                  ) : (
+                    <InviteOrgOwner organizationId={org.id} />
+                  )}
+                </TableCell>
+                <TableCell>
+                  <form
+                    method="post"
+                    action={`/superadmin/organization/${org.id}/delete`}
+                  >
+                    <Button variant="outline" size="icon" type="submit">
+                      <Trash2Icon />
+                    </Button>
                   </form>
                 </TableCell>
-              </TableRow>)
-            })
-          }
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

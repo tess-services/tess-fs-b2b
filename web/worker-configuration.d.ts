@@ -4,10 +4,11 @@ interface Env {
 	BETTER_AUTH_SECRET: string;
 	BETTER_AUTH_URL: string;
 	BETTER_AUTH_TRUSTED_ORIGINS: string;
+	SUPER_ADMIN_EMAILS: string;
 	RESEND_API_KEY: string;
 	RESEND_SENDER_EMAIL: string;
+	ACCOUNT_ID: string;
+	CF_IMAGES_TOKEN: string;
 	ORG_BUCKET: R2Bucket;
 	DB: D1Database;
-	CF_IMAGES_TOKEN: string;
-	ACCOUNT_ID: string;
 }

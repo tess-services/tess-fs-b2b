@@ -1,4 +1,3 @@
-import { ActionFunctionArgs } from '@remix-run/cloudflare'
 import { Link, useNavigate, useSearchParams } from '@remix-run/react'
 import { Loader2, LogInIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -8,15 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { forgetPassword, signIn } from "~/lib/auth.client"
-import { initAuth } from '~/lib/auth.server'
 
 type FormState = "YetToStartLogin" | "LoginInProgress" | "LoginFailed" | "LoginSuccess" | "ForgotPasswordInProgress" | "ForgotPasswordFailed" | "ForgotPasswordSuccess";
-
-export async function action({ request, context }: ActionFunctionArgs) {
-  const auth = initAuth(context.cloudflare.env as Env);
-  
-  return auth.handler(request)
-};
 
 
 export default function SignInForm() {

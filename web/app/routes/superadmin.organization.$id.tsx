@@ -2,25 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useActionData, useLoaderData, useNavigate } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { createInsertSchema } from "drizzle-zod";
+import { useEffect } from "react";
 import { FieldErrors } from "react-hook-form";
 import { getValidatedFormData, useRemixForm } from "remix-hook-form";
-import { z } from "zod";
 import { OrganizationForm } from "~/components/organization-form";
 import { Button } from "~/components/ui/button";
 import { organizationTable } from "~/db/schema";
 import { useToast } from "~/hooks/use-toast";
-import { isSuperAdmin } from "~/lib/isSuperAdmin";
-
-const updateOrganizationSchema = createInsertSchema(organizationTable, {
-  createdAt: z.date({ coerce: true }),
-  updatedAt: z.date({ coerce: true }),
-  id: z.string(),
-});
-
-const resolver = zodResolver(updateOrganizationSchema);
-
-type OrganizationFormType = z.infer<typeof updateOrganizationSchema>;
+import { OrganizationFormType, resolver } from "~/lib/organization";
 
 export type ActionData = {
   success?: boolean;
@@ -39,7 +28,9 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     throw new Error("Organization ID is required");
   }
 
-  const organizations = await db.select().from(organizationTable)
+  const organizations = await db
+    .select()
+    .from(organizationTable)
     .where(eq(organizationTable.id, params.id))
     .execute();
 
@@ -64,7 +55,7 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
   const { errors, data } = await getValidatedFormData<OrganizationFormType>(
     request,
     resolver,
-    false,
+    false
   );
 
   if (errors) {
@@ -72,9 +63,11 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
   }
 
   try {
-    await db.update(organizationTable)
+    await db
+      .update(organizationTable)
       .set({
         ...data,
+        metadata: data.metadata ?? undefined,
         updatedAt: new Date(),
       })
       .where(eq(organizationTable.id, params.id))
@@ -82,7 +75,10 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
 
     return Response.json({ success: true });
   } catch (error) {
-    return Response.json({ error: "Failed to update organization" }, { status: 500 });
+    return Response.json(
+      { error: "Failed to update organization" },
+      { status: 500 }
+    );
   }
 }
 
@@ -90,37 +86,41 @@ export default function EditOrganization() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { organization } = useLoaderData<typeof loader>();
-  
+
   const form = useRemixForm<OrganizationFormType>({
     mode: "onSubmit",
     resolver,
     defaultValues: organization,
   });
-  
+
   const actionData = useActionData<ActionData>();
 
-  if (actionData?.success) {
-    toast({
-      title: "Success",
-      description: "Organization updated successfully",
-    });
-    navigate("/superadmin/organizations");
-    return null;
-  }
+  useEffect(() => {
+    if (actionData?.success) {
+      toast({
+        title: "Success",
+        description: "Organization updated successfully",
+      });
+      navigate("/superadmin/organizations");
+    }
 
-  if (actionData?.error) {
-    toast({
-      title: "Error",
-      description: actionData.error,
-      variant: "destructive",
-    });
-  }
+    if (actionData?.error) {
+      toast({
+        title: "Error",
+        description: actionData.error,
+        variant: "destructive",
+      });
+    }
+  }, [actionData]);
 
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Edit Organization</h1>
-        <Button variant="outline" onClick={() => navigate("/superadmin/organizations")}>
+        <Button
+          variant="outline"
+          onClick={() => navigate("/superadmin/organizations")}
+        >
           Cancel
         </Button>
       </div>
@@ -131,11 +131,7 @@ export default function EditOrganization() {
         </div>
       )}
 
-      <OrganizationForm 
-        form={form} 
-        actionData={actionData}
-        mode="edit"
-      />
+      <OrganizationForm form={form} mode="edit" onSubmit={form.handleSubmit} />
     </div>
   );
 }

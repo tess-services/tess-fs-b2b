@@ -12,7 +12,12 @@ import {
 import { themeSessionResolver } from "./sessions.server";
 
 import clsx from "clsx";
-import { PreventFlashOnWrongTheme, Theme, ThemeProvider, useTheme } from "remix-themes";
+import {
+  PreventFlashOnWrongTheme,
+  Theme,
+  ThemeProvider,
+  useTheme,
+} from "remix-themes";
 import { Toaster } from "./components/ui/toaster";
 import "./tailwind.css";
 
@@ -38,7 +43,7 @@ type LoaderDataType = {
 };
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const { getTheme } = await themeSessionResolver(request)
+  const { getTheme } = await themeSessionResolver(request);
 
   return Response.json({
     theme: getTheme(),
@@ -50,12 +55,18 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 function App({ data }: { readonly data: LoaderDataType }) {
-  const [theme] = useTheme()
-  const bgClass = theme === 'dark' ? "bg-gradient-to-b from-zinc-800 via-stone-800 to-zinc-900" :
-    "bg-gradient-to-b from-silver-100 to-white";
+  const [theme] = useTheme();
+  const bgClass =
+    theme === "dark"
+      ? "bg-gradient-to-b from-zinc-800 via-stone-800 to-zinc-900"
+      : "bg-gradient-to-b from-silver-100 to-white";
 
   return (
-    <html lang="en" className={clsx(theme)} style={{ colorScheme: theme ?? 'inherit' }} >
+    <html
+      lang="en"
+      className={clsx(theme)}
+      style={{ colorScheme: theme ?? "inherit" }}
+    >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -64,32 +75,34 @@ function App({ data }: { readonly data: LoaderDataType }) {
         <Links />
       </head>
       <body>
-        <div className={bgClass} >
+        <div className={bgClass}>
           <Outlet />
           <Toaster />
         </div>
         <ScrollRestoration />
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(
-              data.ENV
-            )}`,
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
           }}
         />
         <Scripts />
-        {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
   );
 }
 
 export default function AppWithProviders() {
-  const data = useLoaderData<LoaderDataType>()
+  const data = useLoaderData<LoaderDataType>();
 
   return (
-    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme" disableTransitionOnThemeChange={true}>
+    <ThemeProvider
+      specifiedTheme={data.theme}
+      themeAction="/action/set-theme"
+      disableTransitionOnThemeChange={true}
+    >
       <App data={data} />
-    </ThemeProvider>);
+    </ThemeProvider>
+  );
 }
 
 export function ErrorBoundary() {
@@ -103,7 +116,8 @@ export function ErrorBoundary() {
         <Links />
       </head>
       <body>
-        Work in progress! Something unexpected happened { (error as any).message }.
+        Work in progress! Something unexpected happened {(error as any).message}
+        .
         <Scripts />
       </body>
     </html>

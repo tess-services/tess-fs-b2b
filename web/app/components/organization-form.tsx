@@ -1,18 +1,25 @@
 import { Form, useNavigate, useNavigation } from "@remix-run/react";
-import { RemixFormProvider } from "remix-hook-form";
+import { useCallback, useMemo } from "react";
+import { RemixFormProvider, useRemixForm } from "remix-hook-form";
 import { Button } from "~/components/ui/button";
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { ActionData } from "~/routes/superadmin.organization.new";
 
 export const OrganizationForm = ({
-  actionData,
   form,
   mode = "new",
+  onSubmit,
 }: {
-  actionData?: ActionData;
-  form: any; // TODO: fix type
+  form: any;
   mode?: "edit" | "new";
+  onSubmit: (data: any) => void;
 }) => {
   const formNavigation = useNavigation();
   const navigate = useNavigate();
@@ -20,7 +27,7 @@ export const OrganizationForm = ({
 
   return (
     <RemixFormProvider {...form}>
-      <Form method="post" onSubmit={form.handleSubmit} className="space-y-4">
+      <form method="post" onSubmit={onSubmit}>
         <FormField
           control={form.control}
           name="name"
@@ -45,7 +52,8 @@ export const OrganizationForm = ({
                 <Input placeholder="acme-corp" {...field} />
               </FormControl>
               <FormDescription>
-                A unique identifier used in URLs. Use lowercase letters, numbers, and hyphens only.
+                A unique identifier used in URLs. Use lowercase letters,
+                numbers, and hyphens only.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -54,12 +62,16 @@ export const OrganizationForm = ({
 
         <FormField
           control={form.control}
-          name="email"
+          name="metadata.email"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="contact@acmecorp.com" {...field} />
+                <Input
+                  type="email"
+                  placeholder="contact@acmecorp.com"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -68,7 +80,7 @@ export const OrganizationForm = ({
 
         <FormField
           control={form.control}
-          name="phone"
+          name="metadata.phone"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Phone</FormLabel>
@@ -82,16 +94,14 @@ export const OrganizationForm = ({
 
         <FormField
           control={form.control}
-          name="abn"
+          name="metadata.abn"
           render={({ field }) => (
             <FormItem>
               <FormLabel>ABN</FormLabel>
               <FormControl>
                 <Input placeholder="12 345 678 901" {...field} />
               </FormControl>
-              <FormDescription>
-                Australian Business Number
-              </FormDescription>
+              <FormDescription>Australian Business Number</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -99,12 +109,15 @@ export const OrganizationForm = ({
 
         <FormField
           control={form.control}
-          name="businessAddress"
+          name="metadata.businessAddress"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Business Address</FormLabel>
               <FormControl>
-                <Input placeholder="123 Business St, Sydney NSW 2000" {...field} />
+                <Input
+                  placeholder="123 Business St, Sydney NSW 2000"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -113,7 +126,7 @@ export const OrganizationForm = ({
 
         <FormField
           control={form.control}
-          name="tradeCurrency"
+          name="metadata.tradeCurrency"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Trade Currency</FormLabel>
@@ -155,10 +168,14 @@ export const OrganizationForm = ({
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : mode === "edit" ? "Update Organization" : "Create Organization"}
+            {isSubmitting
+              ? "Saving..."
+              : mode === "edit"
+              ? "Update Organization"
+              : "Create Organization"}
           </Button>
         </div>
-      </Form>
+      </form>
     </RemixFormProvider>
   );
 };
