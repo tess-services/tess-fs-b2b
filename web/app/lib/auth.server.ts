@@ -3,21 +3,11 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
 import { admin, organization } from "better-auth/plugins";
-
+import { type User } from "better-auth/types";
 import * as schema from "../db/schema";
 import { sendEmail } from "./sendEmail";
 
-type User = {
-  id: string;
-  email: string;
-  emailVerified: boolean;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  image?: string | null | undefined;
-};
-
-// TODO: create a single factory for initAuth call.
+// TODO make it singleton;
 
 export const initAuth = (bindings: Env): Auth => {
   return betterAuth({
@@ -32,13 +22,8 @@ export const initAuth = (bindings: Env): Auth => {
             modelName: "organizationMembership",
           },
         },
-        allowUserToCreateOrganization: async (user: User) => {
-          const { SUPER_ADMIN_EMAILS } = bindings;
-          if (user.email && SUPER_ADMIN_EMAILS.includes(user.email)) {
-            return true;
-          }
-
-          return false;
+        allowUserToCreateOrganization: async (user: any) => {
+          return user.role === "admin";
         },
         sendInvitationEmail: async (data) => {
           const inviteLink = `${bindings.BETTER_AUTH_URL}/superadmin/organizations/invite?email=${data.email}&invitationId=${data.id}`;
@@ -57,6 +42,17 @@ export const initAuth = (bindings: Env): Auth => {
       provider: "sqlite",
       schema,
     }),
+    user: {
+      modelName: "user",
+      additionalFields: {
+        role: {
+          type: "string",
+          required: false,
+          defaultValue: "user",
+          input: false,
+        },
+      },
+    },
     secret: bindings.BETTER_AUTH_SECRET,
     baseURL: bindings.BETTER_AUTH_URL,
     trustedOrigins: bindings.BETTER_AUTH_TRUSTED_ORIGINS.split(","),

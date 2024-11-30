@@ -5,7 +5,7 @@ import { type PlatformProxy } from "wrangler";
 
 interface Env {
   DB: D1Database;
-  ORG_BUCKET: R2Bucket
+  ORG_BUCKET: R2Bucket;
   ACCOUNT_ID: string;
   CF_IMAGES_TOKEN: string;
   BETTER_AUTH_URL: string;
@@ -13,15 +13,14 @@ interface Env {
   BETTER_AUTH_TRUSTED_ORIGINS: string;
   RESEND_API_KEY: string;
   RESEND_SENDER_EMAIL: string;
-  SUPER_ADMIN_EMAILS: string;
 }
-
+type UserWithRole = User & { role: string };
 type Cloudflare = Omit<PlatformProxy<Env>, "dispose"> & {
   var: {
-    user: User | null;
+    user: UserWithRole | null;
     session: Session | null;
     db: DrizzleD1Database | null;
-  }
+  };
 };
 
 declare module "@remix-run/cloudflare" {
@@ -36,9 +35,7 @@ type GetLoadContext = (args: {
 }) => AppLoadContext;
 
 // Shared implementation compatible with Vite, Wrangler, and Cloudflare Pages
-export const getLoadContext: GetLoadContext = ({
-  context,
-}) => {
+export const getLoadContext: GetLoadContext = ({ context }) => {
   return {
     ...context,
     user: null,

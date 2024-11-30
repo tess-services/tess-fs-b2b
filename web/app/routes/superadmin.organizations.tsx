@@ -15,7 +15,7 @@ import {
 } from "~/components/ui/table";
 import { organizationMembership, organizationTable } from "~/db/schema";
 import { sql } from "drizzle-orm/sql";
-import { InviteOrgOwner } from "~/components/invite-org-owner";
+import { InviteOrgAdmin } from "~/components/invite-org-admin";
 import { selectOrganizationSchema } from "~/lib/organization";
 
 type OrganizationRow = z.infer<typeof selectOrganizationSchema> & {
@@ -87,7 +87,7 @@ export default function Organizations() {
                   {org.hasOwner ? (
                     "Yes"
                   ) : (
-                    <InviteOrgOwner organizationId={org.id} />
+                    <InviteOrgAdmin organizationId={org.id} />
                   )}
                 </TableCell>
                 <TableCell>

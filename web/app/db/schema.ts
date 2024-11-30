@@ -12,6 +12,8 @@ export const user = sqliteTable("user", {
   email: text("email").notNull(),
   emailVerified: integer("emailVerified", { mode: "boolean" }).default(false),
   image: text("image"), // user's image url
+
+  role: text("role"), // this should be set as "admin" for superadmin like us the SaaS provider.
   createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`
   ),
@@ -171,6 +173,9 @@ export const invitation = sqliteTable("invitation", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => nanoid()),
+  inviterId: text("inviterId")
+    .notNull()
+    .references(() => user.id),
 
   email: text("email").notNull(),
   organizationId: text("organizationId").notNull(),

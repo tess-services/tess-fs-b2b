@@ -23,7 +23,6 @@ bucket_name = "invoice001"
 [vars]
 RESEND_SENDER_EMAIL = "anand@tessservices.com.au"
 BETTER_AUTH_URL = "http://localhost:5173"
-SUPER_ADMIN_EMAILS = "anand@tessservices.com.au,s.anand.dubey@gmail.com"
 BETTER_AUTH_TRUSTED_ORIGINS = "http://localhost:5173,https://tess-fs-b2b.pages.dev/"
 ACCOUNT_ID = "c72ab688bb982db40b378164180a5b94"
 
@@ -40,6 +39,5 @@ bucket_name = "invoice001"
 [env.production.vars]
 BETTER_AUTH_TRUSTED_ORIGINS = "https://tess-fs-b2b.pages.dev"
 BETTER_AUTH_URL = "https://tess-fs-b2b.pages.dev"
-SUPER_ADMIN_EMAILS = "anand@tessservices.com.au,s.anand.dubey@gmail.com"
 RESEND_SENDER_EMAIL = "anand@tessservices.com.au"
 ACCOUNT_ID = "c72ab688bb982db40b378164180a5b94"

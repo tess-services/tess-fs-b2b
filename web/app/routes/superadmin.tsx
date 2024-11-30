@@ -1,34 +1,40 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu"
-import { LoaderFunctionArgs } from "@remix-run/cloudflare"
-import { NavLink, Outlet } from "@remix-run/react"
-import { Menu, UserCircle } from "lucide-react"
-import { useState } from "react"
-import { ModeToggle } from "~/components/mode-toggle"
-import { Button } from "~/components/ui/button"
-import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "~/components/ui/navigation-menu"
-import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet"
-import { isSuperAdmin } from "~/lib/isSuperAdmin"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { NavLink, Outlet } from "@remix-run/react";
+import { Menu, UserCircle } from "lucide-react";
+import { useState } from "react";
+import { ModeToggle } from "~/components/mode-toggle";
+import { Button } from "~/components/ui/button";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuList,
+} from "~/components/ui/navigation-menu";
+import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
+import { isSuperAdmin } from "~/lib/isSuperAdmin";
 
 const isMenuActive = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-2 text-sm font-medium relative ${isActive
-    ? 'border-b-2 border-b-indigo-500 '
-    : 'text-muted-foreground'
-  }`
+  `px-3 py-2 text-sm font-medium relative ${
+    isActive ? "border-b-2 border-b-indigo-500 " : "text-muted-foreground"
+  }`;
 
-  export async function loader({ context }: LoaderFunctionArgs) {
-    const { db, user } = context.cloudflare.var;
-    // TODO: Ideally this superadmin check should go in a Hono middleware
-    const { SUPER_ADMIN_EMAILS } = context.cloudflare.env;
-  
-    if (!user || !db || !isSuperAdmin(SUPER_ADMIN_EMAILS, user.email)) {
-      throw new Error("Unauthorized");
-    }
-  
-    return null;
+export async function loader({ context }: LoaderFunctionArgs) {
+  const { db, user } = context.cloudflare.var;
+
+  if (!user || !db || !isSuperAdmin(user.role)) {
+    throw new Error("Unauthorized");
   }
-  
+
+  return null;
+}
+
 export default function ProviderLayout() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -52,14 +58,14 @@ export default function ProviderLayout() {
                     Organizations
                   </NavLink>
                   <NavLink to="/sign-out" className="w-full">
-                      Sign out
-                    </NavLink>
+                    Sign out
+                  </NavLink>
                   {/* Add more mobile menu items */}
                 </nav>
               </SheetContent>
             </Sheet>
             {/* Main Navigation */}
-           
+
             <NavigationMenu className="hidden lg:flex">
               <NavigationMenuList>
                 <NavigationMenuItem>
@@ -93,12 +99,11 @@ export default function ProviderLayout() {
               </DropdownMenu>
             </div>
           </div>
-         
         </div>
       </header>
       <main className="flex-1 sm:mx-auto sm:w-full md:max-w-7xl lg:w-full md:px-8 lg:px-10 py-6">
         <Outlet />
       </main>
     </div>
-  )
+  );
 }

@@ -5,18 +5,15 @@ declare global {
       ACCOUNT_ID: string;
       DATABASE_TOKEN: string;
     }
-
   }
   // Extend the Window interface to include ENV
   interface Window {
     ENV: {
       BETTER_AUTH_URL: string;
-      SUPER_ADMIN_EMAILS: string;
     };
   }
 }
 
 // If this file has no import/export statements (i.e. is a script)
 // convert it into a module by adding an empty export statement.
-export { };
-
+export {};
