@@ -1,4 +1,3 @@
-import type { Auth } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
@@ -6,11 +5,10 @@ import { admin, organization } from "better-auth/plugins";
 import { type User } from "better-auth/types";
 import * as schema from "../db/schema";
 import { sendEmail } from "./sendEmail";
+import { adminRole, ownerRole, memberRole, accessControl } from "./permissions";
 
-// TODO make it singleton;
-
-export const initAuth = (bindings: Env): Auth => {
-  return betterAuth({
+const getBetterAuth = (bindings: Env) =>
+  betterAuth({
     plugins: [
       admin(),
       organization({
@@ -24,6 +22,12 @@ export const initAuth = (bindings: Env): Auth => {
         },
         allowUserToCreateOrganization: async (user: any) => {
           return user.role === "admin";
+        },
+        ac: accessControl,
+        roles: {
+          adminRole,
+          ownerRole,
+          memberRole,
         },
         sendInvitationEmail: async (data) => {
           const inviteLink = `${bindings.BETTER_AUTH_URL}/superadmin/organizations/invite?email=${data.email}&invitationId=${data.id}`;
@@ -83,4 +87,15 @@ export const initAuth = (bindings: Env): Auth => {
       },
     },
   });
+
+let betterAuthSingleton: ReturnType<typeof getBetterAuth>;
+
+export const getAuth = (bindings: Env) => {
+  if (betterAuthSingleton) {
+    return betterAuthSingleton;
+  }
+
+  betterAuthSingleton = getBetterAuth(bindings);
+
+  return betterAuthSingleton;
 };

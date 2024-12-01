@@ -11,19 +11,20 @@ const statement = {
   customer: ["create", "read", "update", "delete"],
 } as const;
 
-const access = createAccessControl(statement);
+export const accessControl = createAccessControl(statement);
 
-export const admin = access.newRole({
+export const adminRole = accessControl.newRole({
   ...adminAc.statements,
   customer: ["create", "read", "update", "delete"],
 });
 
-export const owner = access.newRole({
+export const ownerRole = accessControl.newRole({
   ...ownerAc.statements,
-  customer: ["read"],
 });
 
-export const member = access.newRole({
+export const memberRole = accessControl.newRole({
   ...memberAc.statements,
   customer: ["read"],
 });
+
+export type OrgRoles = "admin" | "member";

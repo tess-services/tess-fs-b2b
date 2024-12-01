@@ -5,7 +5,14 @@ import { createSelectSchema } from "drizzle-zod";
 import { Trash2Icon } from "lucide-react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { customerTable, organizationMembership } from "~/db/schema";
 
 const selectCustomerSchema = createSelectSchema(customerTable);
@@ -20,7 +27,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
   }
 
   // First get the user's organization
-  const userOrg = await db.select()
+  const userOrg = await db
+    .select()
     .from(organizationMembership)
     .where(eq(organizationMembership.userId, user.id))
     .execute();
@@ -30,7 +38,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
   }
 
   // Then get customers for that organization
-  const customers = await db.select()
+  const customers = await db
+    .select()
     .from(customerTable)
     .where(eq(customerTable.organizationId, userOrg[0].organizationId))
     .orderBy(desc(customerTable.updatedAt))
@@ -46,10 +55,10 @@ export default function Customers() {
   return (
     <div className="mx-auto lg:max-w-7xl lg:p-0 p-3">
       <div className="flex justify-between">
-        <h1 className="text-2xl font-bold mb-6">
-          Customers
-        </h1>
-        <Button onClick={() => navigate("/provider/customer/new")}>Add new customer</Button>
+        <h1 className="text-2xl font-bold mb-6">Customers</h1>
+        <Button onClick={() => navigate("../customer/new")}>
+          Add new customer
+        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -57,26 +66,31 @@ export default function Customers() {
           <TableHead>Address</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Mobile</TableHead>
-
         </TableHeader>
         <TableBody>
-          {
-            customers.map(c => {
-              return (<TableRow key={c.id}>
-                <TableCell className="underline decoration-2 decoration-blue-400 hover:decoration-yellow-400"><Link to={`/provider/customer/${c.id}`}>{c.name}</Link></TableCell>
-                <TableCell>{c.address} {c.suburb}</TableCell>
+          {customers.map((c) => {
+            return (
+              <TableRow key={c.id}>
+                <TableCell className="underline decoration-2 decoration-blue-400 hover:decoration-yellow-400">
+                  <Link to={`/provider/customer/${c.id}`}>{c.name}</Link>
+                </TableCell>
+                <TableCell>
+                  {c.address} {c.suburb}
+                </TableCell>
                 <TableCell>{c.email}</TableCell>
                 <TableCell>{c.phone}</TableCell>
                 <TableCell>
-                  <form method="post" action={`/provider/customer/${c.id}/delete`}>
-                    <Button variant="outline" size="icon" type="submit"><Trash2Icon /></Button>
+                  <form method="post" action={`../customer/${c.id}/delete`}>
+                    <Button variant="outline" size="icon" type="submit">
+                      <Trash2Icon />
+                    </Button>
                   </form>
                 </TableCell>
-              </TableRow>)
-            })
-          }
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

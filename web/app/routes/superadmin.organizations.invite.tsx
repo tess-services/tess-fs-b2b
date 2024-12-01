@@ -1,8 +1,8 @@
 import { ActionFunctionArgs, json } from "@remix-run/cloudflare";
-import { initAuth } from "~/lib/auth.server";
+import { getAuth } from "~/lib/auth.server";
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const auth = initAuth(context.cloudflare.env as Env);
+  const auth = getAuth(context.cloudflare.env as Env);
   const formData = await request.formData();
   const email = formData.get("email") as string;
   const organizationId = formData.get("organizationId") as string;
@@ -13,7 +13,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       email,
       organizationId,
     });
-    
+
     return json({ success: true });
   } catch (error) {
     return json(

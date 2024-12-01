@@ -2,12 +2,19 @@ import { Form, useNavigate, useNavigation } from "@remix-run/react";
 import { useEffect } from "react";
 import { RemixFormProvider } from "remix-hook-form";
 import { Button } from "~/components/ui/button";
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
 import { useToast } from "~/hooks/use-toast";
 
-import { ActionData } from "~/routes/provider.customer.new";
+import { ActionData } from "~/routes/organizations.$organizationId.$role.customer.new";
 
 export const CustomerForm = ({
   actionData,
@@ -47,7 +54,9 @@ export const CustomerForm = ({
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">{mode === "edit" ? "Update customer detail" : "Add New Customer"}</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {mode === "edit" ? "Update customer detail" : "Add New Customer"}
+      </h1>
       <RemixFormProvider {...form}>
         <Form method="post" onSubmit={form.handleSubmit} className="space-y-4">
           <input type="hidden" name="organizationId" value={organizationId} />
@@ -73,7 +82,11 @@ export const CustomerForm = ({
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="john@example.com" {...field} />
+                  <Input
+                    type="email"
+                    placeholder="john@example.com"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -128,7 +141,9 @@ export const CustomerForm = ({
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">Commercial Customer</FormLabel>
+                  <FormLabel className="text-base">
+                    Commercial Customer
+                  </FormLabel>
                   <FormDescription>
                     Mark if this is a business customer
                   </FormDescription>
@@ -144,11 +159,7 @@ export const CustomerForm = ({
           />
 
           <div className="flex gap-8 justify-end">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-
-            >
+            <Button type="submit" disabled={isSubmitting}>
               {mode === "edit" ? "Update customer" : "Add customer"}
             </Button>
             <Button
@@ -162,5 +173,5 @@ export const CustomerForm = ({
         </Form>
       </RemixFormProvider>
     </div>
-  )
-}
+  );
+};

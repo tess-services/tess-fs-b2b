@@ -1,7 +1,15 @@
-import { type LoaderFunctionArgs } from "@remix-run/cloudflare";
+import {
+  redirectDocument,
+  type LoaderFunctionArgs,
+} from "@remix-run/cloudflare";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { and, eq } from "drizzle-orm";
-import { invitation, organizationTable, user } from "~/db/schema";
+import {
+  invitation,
+  organizationMembership,
+  organizationTable,
+  user,
+} from "~/db/schema";
 import { z } from "zod";
 import { createSelectSchema } from "drizzle-zod";
 import { CenterScreenContainer } from "~/components/CenterScreenContainer";
@@ -42,7 +50,22 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         eq(invitation.status, "pending"),
         eq(invitation.email, currentUser.email)
       )
-    );
+    )
+    .execute();
+
+  // Check if user has only one membership and no pending invitations
+  if (pendingInvitations.length === 0) {
+    const memberships = await db
+      .select()
+      .from(organizationMembership)
+      .where(eq(organizationMembership.userId, currentUser.id))
+      .execute();
+
+    if (memberships.length === 1) {
+      const { organizationId, role } = memberships[0];
+      return redirectDocument(`/organizations/${organizationId}/${role}`);
+    }
+  }
 
   return Response.json({ pendingInvitations });
 }
@@ -80,7 +103,7 @@ export default function Onboarding() {
         onSuccess: (ctx) => {
           setFormState("RequestSuccess");
 
-          navigate(`/${role}/organizations/${organizationId}`);
+          navigate(`/organizations/${organizationId}/${role}`);
         },
         onError: (ctx) => {
           setFormState("RequestFailed");
@@ -158,6 +181,15 @@ export default function Onboarding() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+        {pendingInvitations.length === 0 && (
+          <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4">
+            <h2 className="mb-4 text-lg font-semibold">You are all set!</h2>
+            <p className="text-gray-700">
+              You have no pending invitations, please ask your organization
+              admin to invite you.
+            </p>
           </div>
         )}
       </CenterScreenContainer>
