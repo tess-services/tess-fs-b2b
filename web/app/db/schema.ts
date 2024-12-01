@@ -33,6 +33,7 @@ export const session = sqliteTable("session", {
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
   token: text("token"),
+  activeOrganizationId: text("activeOrganizationId"),
 
   createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`

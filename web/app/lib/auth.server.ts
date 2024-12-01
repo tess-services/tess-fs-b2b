@@ -25,9 +25,9 @@ const getBetterAuth = (bindings: Env) =>
         },
         ac: accessControl,
         roles: {
-          adminRole,
-          ownerRole,
-          memberRole,
+          admin: adminRole,
+          owner: ownerRole,
+          member: memberRole,
         },
         sendInvitationEmail: async (data) => {
           const inviteLink = `${bindings.BETTER_AUTH_URL}/superadmin/organizations/invite?email=${data.email}&invitationId=${data.id}`;

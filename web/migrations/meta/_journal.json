@@ -43,6 +43,13 @@
       "when": 1732819113076,
       "tag": "0005_youthful_aqueduct",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1733085709573,
+      "tag": "0006_rich_nightmare",
+      "breakpoints": true
     }
   ]
 }

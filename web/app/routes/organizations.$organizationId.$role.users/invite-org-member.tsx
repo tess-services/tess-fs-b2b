@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { nanoid } from "nanoid";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -15,17 +14,30 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useToast } from "~/hooks/use-toast";
 import { organization } from "~/lib/auth.client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { UserPlusIcon } from "lucide-react";
 
-export function InviteOrgAdmin({ organizationId }: { organizationId: string }) {
+export function InviteOrgMember({
+  organizationId,
+}: {
+  organizationId: string;
+}) {
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"member" | "admin">("member");
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const inviteAdmin = async () => {
+  const inviteMember = async () => {
     try {
       await organization.inviteMember({
         email,
-        role: "admin",
+        role,
         organizationId,
       });
 
@@ -48,7 +60,10 @@ export function InviteOrgAdmin({ organizationId }: { organizationId: string }) {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Invite Admin</Button>
+        <Button>
+          <UserPlusIcon className="mr-2 h-4 w-4" />
+          Invite User
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -74,13 +89,35 @@ export function InviteOrgAdmin({ organizationId }: { organizationId: string }) {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="role"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Role
+            </label>
+            <Select
+              name="role"
+              onValueChange={(val: "admin" | "member") => setRole(val)}
+              value={role}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="member">Member</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <DialogFooter className="sm:justify-end ">
           <Button
             type="button"
             size="sm"
             className="px-3"
-            onClick={inviteAdmin}
+            onClick={inviteMember}
           >
             Submit
           </Button>

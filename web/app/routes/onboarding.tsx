@@ -16,6 +16,7 @@ import { CenterScreenContainer } from "~/components/CenterScreenContainer";
 import { organization } from "~/lib/auth.client";
 import { useState } from "react";
 import { Spinner } from "~/components/Spinner";
+import { getAuth } from "~/lib/auth.server";
 
 const pendingInvitationsSchema = z.array(
   z.object({
@@ -30,6 +31,24 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const { db, user: currentUser } = context.cloudflare.var;
   if (!currentUser || !db) {
     throw new Error("Unauthorized");
+  }
+
+  const memberships = await db
+    .select()
+    .from(organizationMembership)
+    .where(eq(organizationMembership.userId, currentUser.id))
+    .execute();
+
+  if (memberships.length === 1) {
+    const { organizationId, role } = memberships[0];
+    const auth = getAuth(context.cloudflare.env as Env);
+    await auth.api.setActiveOrganization({
+      headers: request.headers,
+      body: {
+        organizationId,
+      },
+    });
+    return redirectDocument(`/organizations/${organizationId}/${role}`);
   }
 
   // Find pending invitations for the user's email
@@ -52,20 +71,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       )
     )
     .execute();
-
-  // Check if user has only one membership and no pending invitations
-  if (pendingInvitations.length === 0) {
-    const memberships = await db
-      .select()
-      .from(organizationMembership)
-      .where(eq(organizationMembership.userId, currentUser.id))
-      .execute();
-
-    if (memberships.length === 1) {
-      const { organizationId, role } = memberships[0];
-      return redirectDocument(`/organizations/${organizationId}/${role}`);
-    }
-  }
 
   return Response.json({ pendingInvitations });
 }

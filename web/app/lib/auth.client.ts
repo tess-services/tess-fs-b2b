@@ -12,9 +12,9 @@ const authClient = createAuthClient({
     organizationClient({
       ac: accessControl,
       roles: {
-        adminRole,
-        ownerRole,
-        memberRole,
+        admin: adminRole,
+        owner: ownerRole,
+        member: memberRole,
       },
     }),
   ],
