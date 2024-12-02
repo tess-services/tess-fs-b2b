@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import { and, desc, eq, not } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
@@ -36,7 +36,7 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
   const { organizationId } = params;
 
   if (!currentUser || !db || !organizationId) {
-    throw new Error("Unauthorized");
+    return redirect("/signin");
   }
   const auth = getAuth(context.cloudflare.env as Env);
   const hasInvitePermission = await auth.api.hasPermission({

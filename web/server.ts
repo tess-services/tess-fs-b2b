@@ -46,6 +46,9 @@ app.use("organizations/:organizationId/:role", async (c, next) => {
   const db = c.var.db;
   const user = c.var.user;
 
+  if (!db || !user) {
+    return c.redirect("/signin");
+  }
   const membership = await db
     .select()
     .from(organizationMembership)

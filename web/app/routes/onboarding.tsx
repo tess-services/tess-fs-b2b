@@ -17,6 +17,7 @@ import { organization } from "~/lib/auth.client";
 import { useState } from "react";
 import { Spinner } from "~/components/Spinner";
 import { getAuth } from "~/lib/auth.server";
+import { TessMenuBar } from "~/components/TessMenuBar";
 
 const pendingInvitationsSchema = z.array(
   z.object({
@@ -42,6 +43,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   if (memberships.length === 1) {
     const { organizationId, role } = memberships[0];
     const auth = getAuth(context.cloudflare.env as Env);
+
     await auth.api.setActiveOrganization({
       headers: request.headers,
       body: {
@@ -72,7 +74,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     )
     .execute();
 
-  return Response.json({ pendingInvitations });
+  return Response.json({
+    pendingInvitations,
+    name: currentUser.name,
+    email: currentUser.email,
+  });
 }
 
 type FormState =
@@ -82,8 +88,10 @@ type FormState =
   | "RequestSuccess";
 
 export default function Onboarding() {
-  const { pendingInvitations } = useLoaderData<{
+  const { pendingInvitations, name, email } = useLoaderData<{
     pendingInvitations: PendingInvitations;
+    name: string;
+    email: string;
   }>();
 
   const [formState, setFormState] = useState<FormState>("Onboarding");
@@ -121,9 +129,14 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="p-6">
+    <div>
+      <TessMenuBar menuItemMeta={[]} name={name} email={email} />
       {/* Add your main Onboarding content here */}
-      <h1 className="text-2xl font-bold">Onboarding</h1>
+      <div className="mx-auto lg:max-w-7xl lg:p-0 p-3">
+        <div className="flex justify-between">
+          <h1 className="text-2xl font-bold p-6">Onboarding</h1>
+        </div>
+      </div>
       <CenterScreenContainer>
         {pendingInvitations.length > 0 && (
           <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">

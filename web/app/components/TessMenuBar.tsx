@@ -7,6 +7,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import {
@@ -17,6 +19,8 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 
 type MenuBarProps = {
+  name: string;
+  email: string;
   menuItemMeta: {
     url: string;
     label: string;
@@ -28,7 +32,7 @@ const isMenuActive = ({ isActive }: { isActive: boolean }) =>
     isActive ? "border-b-2 border-b-indigo-500 " : "text-muted-foreground"
   }`;
 
-export const TessMenuBar = ({ menuItemMeta }: MenuBarProps) => {
+export const TessMenuBar = ({ name, email, menuItemMeta }: MenuBarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -79,6 +83,15 @@ export const TessMenuBar = ({ menuItemMeta }: MenuBarProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span className="font-bold">{name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {email}
+                    </span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <ModeToggle />
                 </DropdownMenuItem>
@@ -87,6 +100,8 @@ export const TessMenuBar = ({ menuItemMeta }: MenuBarProps) => {
                     Profile
                   </NavLink>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+
                 <DropdownMenuItem>
                   <NavLink to="/sign-out" className="w-full">
                     Sign out

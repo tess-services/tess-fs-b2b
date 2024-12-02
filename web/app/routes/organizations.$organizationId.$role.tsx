@@ -1,14 +1,15 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { Outlet, useParams } from "@remix-run/react";
+import { Outlet, useLoaderData, useParams } from "@remix-run/react";
 import { and, eq } from "drizzle-orm";
 import { TessMenuBar } from "~/components/TessMenuBar";
-import { organizationMembership } from "~/db/schema";
+import { user, organizationMembership } from "~/db/schema";
+import { useSession } from "~/lib/auth.client";
 import { OrgRoles } from "~/lib/permissions";
 
 export async function loader({ params, context }: LoaderFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
+  const { db, user: currentUser } = context.cloudflare.var;
 
-  if (!user || !db) {
+  if (!currentUser || !db) {
     throw new Error("Unauthorized");
   }
 
@@ -21,9 +22,10 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   const membership = await db
     .select()
     .from(organizationMembership)
+    .innerJoin(user, eq(organizationMembership.userId, currentUser.id))
     .where(
       and(
-        eq(organizationMembership.userId, user.id),
+        eq(user.id, currentUser.id),
         eq(organizationMembership.organizationId, organizationId),
         eq(organizationMembership.role, role)
       )
@@ -34,7 +36,11 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     throw new Error(`Unauthorized: User is not ${role} of this organization`);
   }
 
-  return { [role]: true };
+  return {
+    [role]: true,
+    name: membership[0].user.name,
+    email: membership[0].user.email,
+  };
 }
 
 const getOrgRoleMenuItems = (orgId: string, role: OrgRoles) => {
@@ -56,6 +62,10 @@ export default function UserHome() {
     organizationId: string;
   }>();
 
+  const { name, email } = useLoaderData<{
+    name: string;
+    email: string;
+  }>();
   if (!role || !organizationId) {
     throw new Error("Organization ID and role are required");
   }
@@ -64,7 +74,7 @@ export default function UserHome() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <TessMenuBar menuItemMeta={orgMenuItems} />
+      <TessMenuBar menuItemMeta={orgMenuItems} name={name} email={email} />
       <main className="flex-1 sm:mx-auto sm:w-full md:max-w-7xl lg:w-full md:px-8 lg:px-10 py-6">
         <Outlet />
       </main>

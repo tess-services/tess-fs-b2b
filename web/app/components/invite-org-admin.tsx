@@ -21,7 +21,9 @@ export function InviteOrgAdmin({ organizationId }: { organizationId: string }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const inviteAdmin = async () => {
+  const inviteAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     try {
       await organization.inviteMember({
         email,
@@ -50,53 +52,55 @@ export function InviteOrgAdmin({ organizationId }: { organizationId: string }) {
       <DialogTrigger asChild>
         <Button variant="outline">Invite Admin</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Enter owner email</DialogTitle>
-          <DialogDescription>
-            Person who would be managing the organization (add/edit members)
-          </DialogDescription>
-        </DialogHeader>
-        <input type="hidden" name="organizationId" value={organizationId} />
-        <div className="flex items-center space-x-2">
-          <div className="grid flex-1 gap-2">
-            <Label htmlFor="email" className="sr-only">
-              Email
-            </Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="abc@xyz.com"
-              className="w-full"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+      <form onSubmit={inviteAdmin} action="post">
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enter owner email</DialogTitle>
+            <DialogDescription>
+              Person who would be managing the organization (add/edit members)
+            </DialogDescription>
+          </DialogHeader>
+          <input type="hidden" name="organizationId" value={organizationId} />
+          <div className="flex items-center space-x-2">
+            <div className="grid flex-1 gap-2">
+              <Label htmlFor="email" className="sr-only">
+                Email
+              </Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="abc@xyz.com"
+                className="w-full"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
-        <DialogFooter className="sm:justify-end ">
-          <Button
-            type="button"
-            size="sm"
-            className="px-3"
-            onClick={inviteAdmin}
-          >
-            Submit
-          </Button>
-          <DialogClose asChild>
+          <DialogFooter className="sm:justify-end ">
             <Button
-              type="button"
+              type="submit"
               size="sm"
               className="px-3"
-              variant="outline"
-              onClick={() => setDialogOpen(false)}
+              onClick={inviteAdmin}
             >
-              Cancel
+              Submit
             </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                size="sm"
+                className="px-3"
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </form>
     </Dialog>
   );
 }
