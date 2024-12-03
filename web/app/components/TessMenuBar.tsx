@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 type MenuBarProps = {
   name: string;
   email: string;
+  organizationName?: string;
   menuItemMeta: {
     url: string;
     label: string;
@@ -32,7 +33,12 @@ const isMenuActive = ({ isActive }: { isActive: boolean }) =>
     isActive ? "border-b-2 border-b-indigo-500 " : "text-muted-foreground"
   }`;
 
-export const TessMenuBar = ({ name, email, menuItemMeta }: MenuBarProps) => {
+export const TessMenuBar = ({
+  name,
+  email,
+  organizationName,
+  menuItemMeta,
+}: MenuBarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -86,6 +92,9 @@ export const TessMenuBar = ({ name, email, menuItemMeta }: MenuBarProps) => {
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
                     <span className="font-bold">{name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {organizationName}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {email}
                     </span>

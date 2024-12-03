@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Outlet, useLoaderData, useParams } from "@remix-run/react";
 import { and, eq } from "drizzle-orm";
 import { TessMenuBar } from "~/components/TessMenuBar";
-import { user, organizationMembership } from "~/db/schema";
+import { user, organizationMembership, organizationTable } from "~/db/schema";
 import { useSession } from "~/lib/auth.client";
 import { OrgRoles } from "~/lib/permissions";
 
@@ -23,6 +23,10 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     .select()
     .from(organizationMembership)
     .innerJoin(user, eq(organizationMembership.userId, currentUser.id))
+    .innerJoin(
+      organizationTable,
+      eq(organizationMembership.organizationId, organizationTable.id)
+    )
     .where(
       and(
         eq(user.id, currentUser.id),
@@ -40,6 +44,7 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     [role]: true,
     name: membership[0].user.name,
     email: membership[0].user.email,
+    organizationName: membership[0].organization.name,
   };
 }
 
@@ -53,6 +58,16 @@ const getOrgRoleMenuItems = (orgId: string, role: OrgRoles) => {
       },
     ];
   }
+
+  if (role === "member") {
+    return [
+      { url: `/organizations/${orgId}/member/tasks`, label: "Tasks" },
+      {
+        url: `/organizations/${orgId}/member/projects`,
+        label: "Projects",
+      },
+    ];
+  }
   return [];
 };
 
@@ -62,9 +77,10 @@ export default function UserHome() {
     organizationId: string;
   }>();
 
-  const { name, email } = useLoaderData<{
+  const { name, email, organizationName } = useLoaderData<{
     name: string;
     email: string;
+    organizationName: string;
   }>();
   if (!role || !organizationId) {
     throw new Error("Organization ID and role are required");
@@ -74,7 +90,12 @@ export default function UserHome() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <TessMenuBar menuItemMeta={orgMenuItems} name={name} email={email} />
+      <TessMenuBar
+        menuItemMeta={orgMenuItems}
+        name={name}
+        email={email}
+        organizationName={organizationName}
+      />
       <main className="flex-1 sm:mx-auto sm:w-full md:max-w-7xl lg:w-full md:px-8 lg:px-10 py-6">
         <Outlet />
       </main>
