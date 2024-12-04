@@ -14,34 +14,46 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { customerTable, organizationMembership } from "~/db/schema";
+import { getAuth } from "~/lib/auth.server";
 
 const selectCustomerSchema = createSelectSchema(customerTable);
 
 type CustomerTable = z.infer<typeof selectCustomerSchema>;
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ context, params, request }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
-
+  const auth = getAuth(context.cloudflare.env as Env);
   if (!user || !db) {
     throw new Error("Unauthorized");
   }
 
-  // First get the user's organization
-  const userOrg = await db
-    .select()
-    .from(organizationMembership)
-    .where(eq(organizationMembership.userId, user.id))
-    .execute();
+  const { organizationId, role } = params;
+  if (!organizationId || !role) {
+    throw new Error("Organization ID and role are required");
+  }
 
-  if (!userOrg.length) {
-    throw new Error("No organization found for user");
+  // First get the user's permission
+  const customerReadPermission = await auth.api.hasPermission({
+    headers: request.headers,
+    body: {
+      role: {
+        in: [role],
+      },
+      permission: {
+        customer: ["read"],
+      },
+    },
+  });
+
+  if (!customerReadPermission.success) {
+    throw new Error("Unauthorized");
   }
 
   // Then get customers for that organization
   const customers = await db
     .select()
     .from(customerTable)
-    .where(eq(customerTable.organizationId, userOrg[0].organizationId))
+    .where(eq(customerTable.organizationId, organizationId))
     .orderBy(desc(customerTable.updatedAt))
     .execute();
 

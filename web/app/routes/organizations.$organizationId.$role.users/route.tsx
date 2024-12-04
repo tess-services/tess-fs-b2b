@@ -62,7 +62,6 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
       },
     },
   });
-  console.log(memberPermissionCheck);
   // Get all users in the organization with their member details
   const users = await db
     .select()

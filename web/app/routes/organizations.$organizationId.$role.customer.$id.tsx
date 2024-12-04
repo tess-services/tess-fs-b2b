@@ -9,6 +9,7 @@ import { z } from "zod";
 import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
 import { customerTable, organizationMembership } from "~/db/schema";
+import { getAuth } from "~/lib/auth.server";
 
 const updateCustomerSchema = createInsertSchema(customerTable).omit({
   id: true,
@@ -28,28 +29,46 @@ export type ActionData = {
   errors?: FieldErrors<CustomerFormType>;
 };
 
-export async function loader({ params, context }: LoaderFunctionArgs) {
+export async function loader({ params, context, request }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
-  const { id } = params;
+  const auth = getAuth(context.cloudflare.env as Env);
 
-  if (!user || !db || !id) {
-    throw new Error("Unauthorized or Invalid ID");
+  if (!user || !db) {
+    throw new Error("Unauthorized");
   }
 
-  // Get user's organization
-  const userOrg = await db.select().from(organizationMembership)
-    .where(eq(organizationMembership.userId, user.id)).execute();
+  const { organizationId, role, id } = params;
 
-  if (userOrg.length === 0) {
-    throw new Error("Unauthorized or Invalid ID");
+  if (!organizationId || !role || !id) {
+    throw new Error("Organization ID, role, and ID are required");
+  }
+
+  // First get the user's permission
+  const customerUpdatePermission = await auth.api.hasPermission({
+    headers: request.headers,
+    body: {
+      role: {
+        in: [role],
+      },
+      permission: {
+        customer: ["update"],
+      },
+    },
+  });
+
+  if (!customerUpdatePermission.success) {
+    throw new Error("Unauthorized");
   }
 
   // Get customer data
-  const customers = await db.select()
+  const customers = await db
+    .select()
     .from(customerTable)
     .where(
-      and(eq(customerTable.organizationId, userOrg[0].organizationId),
-        eq(customerTable.id, id))
+      and(
+        eq(customerTable.organizationId, organizationId),
+        eq(customerTable.id, id)
+      )
     )
     .execute();
 
@@ -58,8 +77,8 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   }
 
   return Response.json({
-    organizationId: userOrg[0].organizationId,
-    customer: customers[0]
+    organizationId: organizationId,
+    customer: customers[0],
   });
 }
 
@@ -74,7 +93,7 @@ export async function action({ params, request, context }: ActionFunctionArgs) {
   const { errors, data } = await getValidatedFormData<CustomerFormType>(
     request,
     resolver,
-    false,
+    false
   );
 
   if (errors) {
@@ -83,29 +102,44 @@ export async function action({ params, request, context }: ActionFunctionArgs) {
 
   try {
     // Verify user has access to this customer via organization
-    const userOrg = await db.select().from(organizationMembership)
-      .where(eq(organizationMembership.userId, user.id)).execute();
+    const userOrg = await db
+      .select()
+      .from(organizationMembership)
+      .where(eq(organizationMembership.userId, user.id))
+      .execute();
 
     if (userOrg.length === 0) {
       throw new Error("User has no org assigned");
     }
 
     // Update customer
-    await db.update(customerTable)
+    await db
+      .update(customerTable)
       .set({
         ...data,
         updatedAt: new Date(),
       })
-      .where(and(eq(customerTable.id, id), eq(customerTable.organizationId, userOrg[0].organizationId)));
+      .where(
+        and(
+          eq(customerTable.id, id),
+          eq(customerTable.organizationId, userOrg[0].organizationId)
+        )
+      );
 
     return Response.json({ success: true });
   } catch (error) {
-    return Response.json({ error: "Failed to update customer" }, { status: 500 });
+    return Response.json(
+      { error: "Failed to update customer" },
+      { status: 500 }
+    );
   }
 }
 
 export default function EditCustomer() {
-  const { organizationId, customer } = useLoaderData<{ organizationId: string, customer: CustomerTable }>();
+  const { organizationId, customer } = useLoaderData<{
+    organizationId: string;
+    customer: CustomerTable;
+  }>();
   const navigate = useNavigate();
   const actionData = useActionData<ActionData>();
 

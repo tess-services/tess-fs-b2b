@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { useActionData, useLoaderData, useNavigate } from "@remix-run/react";
+import { useActionData, useNavigate, useParams } from "@remix-run/react";
 import { eq } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { FieldErrors } from "react-hook-form";
@@ -10,6 +10,7 @@ import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
 
 import { customerTable, organizationMembership } from "~/db/schema";
+import { getAuth } from "~/lib/auth.server";
 
 const insertCustomerSchema = createInsertSchema(customerTable, {
   createdAt: z.date({ coerce: true }),
@@ -28,21 +29,34 @@ export type ActionData = {
   errors?: FieldErrors<CustomerFormType>;
 };
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ context, params, request }: LoaderFunctionArgs) {
   const { db, user } = context.cloudflare.var;
 
   if (!user || !db) {
     throw new Error("Unauthorized");
   }
-
-  const organization = await db.select().from(organizationMembership)
-    .where(eq(organizationMembership.userId, user.id)).execute();
-
-  if (organization.length === 0) {
-    return Response.json({ organizationId: null });
+  const { organizationId, role } = params;
+  if (!organizationId || !role) {
+    throw new Error("Organization ID and role are required");
   }
 
-  return Response.json({ organizationId: organization[0].organizationId });
+  const auth = getAuth(context.cloudflare.env as Env);
+  const customerCreatePermission = await auth.api.hasPermission({
+    headers: request.headers,
+    body: {
+      role: {
+        in: [role],
+      },
+      permission: {
+        customer: ["create"],
+      },
+    },
+  });
+  if (!customerCreatePermission.success) {
+    throw new Error("Unauthorized");
+  }
+
+  return Response.json({ success: true });
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -55,7 +69,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   const { errors, data } = await getValidatedFormData<CustomerFormType>(
     request,
     resolver,
-    false,
+    false
   );
 
   if (errors) {
@@ -63,8 +77,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
   }
 
   try {
-    const userOrgs = await db.select().from(organizationMembership)
-      .where(eq(organizationMembership.userId, user.id)).execute();
+    const userOrgs = await db
+      .select()
+      .from(organizationMembership)
+      .where(eq(organizationMembership.userId, user.id))
+      .execute();
 
     if (userOrgs.length === 0) {
       throw new Error("User has no org assigned");
@@ -72,11 +89,14 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     const userOrg = userOrgs[0];
 
-    await db.insert(customerTable).values({
-      ...data,
-      organizationId: userOrg.organizationId,
-      addedByUserId: user.id,
-    }).returning();
+    await db
+      .insert(customerTable)
+      .values({
+        ...data,
+        organizationId: userOrg.organizationId,
+        addedByUserId: user.id,
+      })
+      .returning();
 
     return Response.json({ success: true });
   } catch (error) {
@@ -85,9 +105,9 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function AddCustomer() {
-  const { organizationId } = useLoaderData<{ organizationId: string | null }>();
+  const params = useParams();
   const navigate = useNavigate();
-
+  const { organizationId } = params;
   const form = useRemixForm<CustomerFormType>({
     mode: "onSubmit",
     resolver,
@@ -107,6 +127,10 @@ export default function AddCustomer() {
   }
 
   return (
-    <CustomerForm actionData={actionData} organizationId={organizationId} form={form} />
+    <CustomerForm
+      actionData={actionData}
+      organizationId={organizationId}
+      form={form}
+    />
   );
 }
