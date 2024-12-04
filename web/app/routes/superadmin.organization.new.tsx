@@ -2,8 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useNavigate } from "@remix-run/react";
 import { createInsertSchema } from "drizzle-zod";
-import { FieldErrors } from "react-hook-form";
-import { useRemixForm } from "remix-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { organizationTable } from "~/db/schema";
@@ -44,7 +43,7 @@ export default function AddOrganization() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const form = useRemixForm<CreateOrganizationFormType>({
+  const form = useForm<CreateOrganizationFormType>({
     mode: "onSubmit",
     resolver,
     defaultValues: {
@@ -54,17 +53,9 @@ export default function AddOrganization() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // resolve data values from form
-    const values = form.getValues();
-    createOrg(values);
-  };
-
   const createOrg = async (data: CreateOrganizationFormType) => {
     try {
-      console.log(".....data", data);
-      const response = await authOrganizationClient.create({
+      await authOrganizationClient.create({
         name: data.name,
         slug: data.slug,
         logo: data.logo ?? undefined,
@@ -97,7 +88,7 @@ export default function AddOrganization() {
         </Button>
       </div>
 
-      <OrganizationForm form={form} onSubmit={handleSubmit} />
+      <OrganizationForm form={form} onSubmit={createOrg} />
     </div>
   );
 }

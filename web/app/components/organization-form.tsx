@@ -1,8 +1,7 @@
-import { Form, useNavigate, useNavigation } from "@remix-run/react";
-import { useCallback, useMemo } from "react";
-import { RemixFormProvider, useRemixForm } from "remix-hook-form";
+import { useNavigate, useNavigation } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import {
+  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -26,8 +25,8 @@ export const OrganizationForm = ({
   const isSubmitting = formNavigation.state === "submitting";
 
   return (
-    <RemixFormProvider {...form}>
-      <form method="post" onSubmit={onSubmit}>
+    <Form {...form}>
+      <form method="post" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="name"
@@ -176,6 +175,6 @@ export const OrganizationForm = ({
           </Button>
         </div>
       </form>
-    </RemixFormProvider>
+    </Form>
   );
 };

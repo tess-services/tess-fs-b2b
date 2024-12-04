@@ -72,7 +72,7 @@ export default function Customers() {
             return (
               <TableRow key={c.id}>
                 <TableCell className="underline decoration-2 decoration-blue-400 hover:decoration-yellow-400">
-                  <Link to={`/provider/customer/${c.id}`}>{c.name}</Link>
+                  <Link to={`../customer/${c.id}`}>{c.name}</Link>
                 </TableCell>
                 <TableCell>
                   {c.address} {c.suburb}

@@ -1,9 +1,11 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Outlet, useLoaderData, useParams } from "@remix-run/react";
 import { and, eq } from "drizzle-orm";
+import { useEffect } from "react";
 import { TessMenuBar } from "~/components/TessMenuBar";
 import { user, organizationMembership, organizationTable } from "~/db/schema";
 import { useSession } from "~/lib/auth.client";
+import { setUserSession } from "~/lib/localStorageManager";
 import { OrgRoles } from "~/lib/permissions";
 
 export async function loader({ params, context }: LoaderFunctionArgs) {
@@ -19,7 +21,7 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     throw new Error("Organization ID and role are required");
   }
 
-  const membership = await db
+  const userOrgMemberMap = await db
     .select()
     .from(organizationMembership)
     .innerJoin(user, eq(organizationMembership.userId, currentUser.id))
@@ -36,15 +38,17 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     )
     .execute();
 
-  if (membership.length === 0) {
+  if (userOrgMemberMap.length === 0) {
     throw new Error(`Unauthorized: User is not ${role} of this organization`);
   }
 
   return {
     [role]: true,
-    name: membership[0].user.name,
-    email: membership[0].user.email,
-    organizationName: membership[0].organization.name,
+    name: userOrgMemberMap[0].user.name,
+    email: userOrgMemberMap[0].user.email,
+    organizationId,
+    role: userOrgMemberMap[0].member.role,
+    organizationName: userOrgMemberMap[0].organization.name,
   };
 }
 
@@ -85,6 +89,16 @@ export default function UserHome() {
   if (!role || !organizationId) {
     throw new Error("Organization ID and role are required");
   }
+
+  useEffect(() => {
+    setUserSession({
+      name,
+      email,
+      activeOrganizationId: organizationId,
+      role,
+      organizationName,
+    });
+  }, [name, email, organizationName]);
 
   const orgMenuItems = getOrgRoleMenuItems(organizationId, role);
 

@@ -4,13 +4,16 @@ import { z } from "zod";
 import { organizationTable } from "~/db/schema";
 
 // Define the metadata schema
-export const organizationMetadataSchema = z.object({
-  abn: z.string().optional().nullable(),
-  phone: z.string().optional().nullable(),
-  businessAddress: z.string().optional().nullable(),
-  tradeCurrency: z.string().optional().nullable(),
-  email: z.string().optional().nullable(),
-});
+export const organizationMetadataSchema = z
+  .object({
+    abn: z.string().optional().nullable(),
+    phone: z.string().optional().nullable(),
+    businessAddress: z.string().optional().nullable(),
+    tradeCurrency: z.string().optional().nullable(),
+    email: z.string().optional().nullable(),
+  })
+  .optional()
+  .nullable();
 
 // Export the type
 export type OrganizationMetadata = z.infer<typeof organizationMetadataSchema>;
@@ -30,7 +33,7 @@ export const selectOrganizationSchema = createSelectSchema(organizationTable)
     logo: true,
   })
   .extend({
-    metadata: organizationMetadataSchema,
+    metadata: organizationMetadataSchema.nullable(),
   });
 
 export const resolver = zodResolver(updateOrganizationSchema);

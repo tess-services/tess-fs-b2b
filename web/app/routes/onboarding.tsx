@@ -18,11 +18,14 @@ import { useState } from "react";
 import { Spinner } from "~/components/Spinner";
 import { getAuth } from "~/lib/auth.server";
 import { TessMenuBar } from "~/components/TessMenuBar";
+import { organizationMetadataSchema } from "~/lib/organization";
 
 const pendingInvitationsSchema = z.array(
   z.object({
     invitation: createSelectSchema(invitation),
-    organization: createSelectSchema(organizationTable),
+    organization: createSelectSchema(organizationTable).extend({
+      metadata: organizationMetadataSchema,
+    }),
     inviter: createSelectSchema(user),
   })
 );

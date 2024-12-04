@@ -1,15 +1,13 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { useActionData, useLoaderData, useNavigate } from "@remix-run/react";
+import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { eq } from "drizzle-orm";
-import { useEffect } from "react";
-import { FieldErrors } from "react-hook-form";
-import { getValidatedFormData, useRemixForm } from "remix-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { OrganizationForm } from "~/components/organization-form";
 import { Button } from "~/components/ui/button";
 import { organizationTable } from "~/db/schema";
 import { useToast } from "~/hooks/use-toast";
 import { OrganizationFormType, resolver } from "~/lib/organization";
+import { organization as authOrganizationClient } from "~/lib/auth.client";
 
 export type ActionData = {
   success?: boolean;
@@ -41,77 +39,42 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   return { organization: organizations[0] };
 }
 
-export async function action({ request, context, params }: ActionFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
-
-  if (!params.id) {
-    throw new Error("Organization ID is required");
-  }
-
-  const { errors, data } = await getValidatedFormData<OrganizationFormType>(
-    request,
-    resolver,
-    false
-  );
-
-  if (errors) {
-    return Response.json({ errors });
-  }
-
-  try {
-    await db
-      .update(organizationTable)
-      .set({
-        ...data,
-        metadata: data.metadata ?? undefined,
-        updatedAt: new Date(),
-      })
-      .where(eq(organizationTable.id, params.id))
-      .returning();
-
-    return Response.json({ success: true });
-  } catch (error) {
-    return Response.json(
-      { error: "Failed to update organization" },
-      { status: 500 }
-    );
-  }
-}
-
 export default function EditOrganization() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { organization } = useLoaderData<typeof loader>();
 
-  const form = useRemixForm<OrganizationFormType>({
+  const form = useForm<OrganizationFormType>({
     mode: "onSubmit",
     resolver,
     defaultValues: organization,
   });
 
-  const actionData = useActionData<ActionData>();
+  const updateOrg = async (data: OrganizationFormType) => {
+    try {
+      await authOrganizationClient.update({
+        data: {
+          name: data.name,
+          slug: data.slug,
+          logo: data.logo ?? undefined,
+          metadata: data.metadata ?? undefined,
+        },
+        organizationId: data.id,
+      });
 
-  useEffect(() => {
-    if (actionData?.success) {
       toast({
         title: "Success",
         description: "Organization updated successfully",
       });
       navigate("/superadmin/organizations");
-    }
-
-    if (actionData?.error) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: actionData.error,
+        description: "Failed to submit form",
         variant: "destructive",
       });
     }
-  }, [actionData]);
+  };
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -125,13 +88,7 @@ export default function EditOrganization() {
         </Button>
       </div>
 
-      {actionData?.error && (
-        <div className="bg-red-50 text-red-500 p-4 rounded-md mb-4">
-          {actionData.error}
-        </div>
-      )}
-
-      <OrganizationForm form={form} mode="edit" onSubmit={form.handleSubmit} />
+      <OrganizationForm form={form} mode="edit" onSubmit={updateOrg} />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { forgetPassword, signIn } from "~/lib/auth.client";
+import { setUserSession } from "~/lib/localStorageManager";
 
 type FormState =
   | "YetToStartLogin"
@@ -33,6 +34,7 @@ export default function SignInForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       setFormState("LoginInProgress");
       setError("");
@@ -45,11 +47,15 @@ export default function SignInForm() {
           },
           onSuccess: (ctx) => {
             setFormState("LoginSuccess");
+            setUserSession({
+              name: ctx.data.user.name,
+              email: ctx.data.user.email,
+            });
+
             if (ctx.data.user?.role === "admin") {
               navigate("/superadmin/organizations");
               return;
             }
-            console.log("==========", ctx.data);
             navigate("/onboarding");
           },
           onError: (ctx) => {
@@ -84,6 +90,7 @@ export default function SignInForm() {
       alert("Password reset failed");
     }
   };
+
   const isInProgress =
     formState === "LoginInProgress" || formState === "ForgotPasswordInProgress";
 
