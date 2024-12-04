@@ -25,6 +25,7 @@ export const ownerRole = accessControl.newRole({
 export const memberRole = accessControl.newRole({
   ...memberAc.statements,
   customer: ["read"],
+  invitation: ["cancel"],
 });
 
 export type OrgRoles = "admin" | "member";

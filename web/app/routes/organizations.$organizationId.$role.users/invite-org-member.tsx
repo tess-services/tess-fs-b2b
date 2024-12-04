@@ -53,6 +53,7 @@ export function InviteOrgMember({
   organizationId: string;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [requestInProgress, setRequestInProgress] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
@@ -66,17 +67,34 @@ export function InviteOrgMember({
 
   const inviteMember: SubmitHandler<FormData> = async (values: FormData) => {
     try {
-      await organization.inviteMember({
-        email: values.email,
-        role: values.role,
-        organizationId: values.organizationId,
-      });
+      setRequestInProgress(true);
+      await organization.inviteMember(
+        {
+          email: values.email,
+          role: values.role,
+          organizationId: values.organizationId,
+        },
+        {
+          onRequest: (ctx) => {
+            // Handle the request
+          },
+          onSuccess: (ctx) => {
+            toast({
+              title: "Success",
+              variant: "default",
+              description: "Organization member invited successfully",
+            });
+          },
+          onError: (ctx) => {
+            toast({
+              title: "Error",
+              variant: "destructive",
+              description: ctx.error?.message || "Failed to invite member",
+            });
+          },
+        }
+      );
 
-      toast({
-        title: "Success",
-        variant: "default",
-        description: "Organization member invited successfully",
-      });
       setDialogOpen(false);
       form.reset();
     } catch (error) {
@@ -85,6 +103,8 @@ export function InviteOrgMember({
         variant: "destructive",
         description: "Failed to invite member",
       });
+    } finally {
+      setRequestInProgress(false);
     }
   };
 
@@ -151,7 +171,12 @@ export function InviteOrgMember({
             />
 
             <DialogFooter className="sm:justify-end">
-              <Button type="submit" size="sm" className="px-3">
+              <Button
+                type="submit"
+                size="sm"
+                className="px-3"
+                disabled={requestInProgress}
+              >
                 Invite
               </Button>
               <DialogClose asChild>

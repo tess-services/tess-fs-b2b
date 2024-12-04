@@ -25,6 +25,7 @@ type Membership = z.infer<typeof selectMembershipSchema>;
 
 type LoaderData = {
   hasInvitePermission: boolean;
+  hasMemberEditPermission: boolean;
   users: {
     user: User;
     member: Membership;
@@ -33,23 +34,35 @@ type LoaderData = {
 
 export async function loader({ context, params, request }: LoaderFunctionArgs) {
   const { db, user: currentUser } = context.cloudflare.var;
-  const { organizationId } = params;
+  const { organizationId, role } = params;
 
   if (!currentUser || !db || !organizationId) {
     return redirect("/signin");
   }
   const auth = getAuth(context.cloudflare.env as Env);
-  const hasInvitePermission = await auth.api.hasPermission({
+  const invitePermissionCheck = await auth.api.hasPermission({
     headers: request.headers,
     body: {
       role: {
-        in: ["admin"],
+        in: [role],
       },
       permission: {
         invitation: ["create"],
       },
     },
   });
+  const memberPermissionCheck = await auth.api.hasPermission({
+    headers: request.headers,
+    body: {
+      role: {
+        in: [role],
+      },
+      permission: {
+        member: ["update", "delete"],
+      },
+    },
+  });
+  console.log(memberPermissionCheck);
   // Get all users in the organization with their member details
   const users = await db
     .select()
@@ -67,12 +80,16 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
     .orderBy(desc(organizationMembership.updatedAt))
     .execute();
 
-  return Response.json({ users, hasInvitePermission });
+  return Response.json({
+    users,
+    hasInvitePermission: invitePermissionCheck.success,
+    hasMemberEditPermission: memberPermissionCheck.success,
+  });
 }
 
 export default function Users() {
-  const { users, hasInvitePermission } = useLoaderData<LoaderData>();
-  const navigate = useNavigate();
+  const { users, hasInvitePermission, hasMemberEditPermission } =
+    useLoaderData<LoaderData>();
   const { organizationId } = useParams();
 
   if (!organizationId) {
@@ -94,7 +111,7 @@ export default function Users() {
           <TableHead>Email</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Joined At</TableHead>
-          <TableHead>Actions</TableHead>
+          {hasMemberEditPermission && <TableHead>Actions</TableHead>}
         </TableHeader>
         <TableBody>
           {users.map((user) => {
@@ -120,13 +137,15 @@ export default function Users() {
                 <TableCell>
                   {new Date(member.createdAt!).toLocaleDateString()}
                 </TableCell>
-                <TableCell>
-                  <form method="post" action={`remove/${u.id}`}>
-                    <Button variant="outline" size="icon" type="submit">
-                      <Trash2Icon className="h-4 w-4" />
-                    </Button>
-                  </form>
-                </TableCell>
+                {hasMemberEditPermission && (
+                  <TableCell>
+                    <form method="post" action={`remove/${u.id}`}>
+                      <Button variant="outline" size="icon" type="submit">
+                        <Trash2Icon className="h-4 w-4" />
+                      </Button>
+                    </form>
+                  </TableCell>
+                )}
               </TableRow>
             );
           })}
