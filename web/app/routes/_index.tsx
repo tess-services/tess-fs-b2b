@@ -1,8 +1,6 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { Link } from "@remix-run/react";
-import { useEffect, useState } from "react";
 import { TessMenuBar } from "~/components/TessMenuBar";
-import { useActiveOrganization } from "~/lib/auth.client";
 import { useUserSession } from "~/lib/localStorageManager";
 
 export const meta: MetaFunction = () => {
@@ -65,9 +63,197 @@ export default function Index() {
             </span>
           </h1>
         </header>
-        <div className="h-[144px] w-[434px]">
-          <img src="/assets/logo.webp" alt="logo" className="block w-full" />
-        </div>
+        <main className="max-w-6xl mx-auto px-4 py-12">
+          {/* Hero Section */}
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Modern Fullstack Application Template
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              A powerful starter template combining the best of modern web
+              technologies for building scalable B2B applications.
+            </p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {/* Web Stack */}
+            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-900">
+                Web Stack
+              </h3>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Remix - Modern React Framework
+                </li>
+                <li className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Shadcn UI & Tailwind CSS
+                </li>
+                <li className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Better Auth Authentication
+                </li>
+                <li className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  TypeScript
+                </li>
+              </ul>
+            </div>
+
+            {/* API Stack */}
+            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-900">
+                API Stack
+              </h3>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Hono JS Runtime
+                </li>
+                <li className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Cloudflare R2 Storage
+                </li>
+                <li className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  D1 Database
+                </li>
+                <li className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Drizzle ORM
+                </li>
+              </ul>
+            </div>
+
+            {/* Quick Start */}
+            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-900">
+                Quick Start
+              </h3>
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-3 rounded-md">
+                  <code className="text-sm text-gray-800">1. bun install</code>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-md">
+                  <code className="text-sm text-gray-800">
+                    2. bun run migration:apply:local
+                  </code>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-md">
+                  <code className="text-sm text-gray-800">3. bun run dev</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">
+              Ready to start building your next B2B application?
+            </p>
+            <button className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+              Get Started
+            </button>
+          </div>
+        </main>
       </div>
     </div>
   );

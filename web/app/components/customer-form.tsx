@@ -38,7 +38,10 @@ export const CustomerForm = ({
     if (actionData?.success) {
       toast({
         title: "Customer saved successfully",
-        description: "New customer has been added to your organization",
+        description:
+          mode === "edit"
+            ? "Customer has been updated"
+            : "New customer has been added to your organization",
         variant: "default",
       });
       navigate("../customers");
