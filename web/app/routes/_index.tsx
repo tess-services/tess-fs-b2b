@@ -49,7 +49,7 @@ export default function Index() {
         </Link>
         <Link
           to="/signin"
-          className="px-4 py-2 text-gray-700 border-2 border-gray-300 rounded-lg hover:border-purple-500 hover:text-purple-500 transition-all duration-200 font-semibold"
+          className="px-4 py-2 text-gray-700 dark:text-gray-200 border-2 border-gray-300 dark:border-gray-500 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 hover:text-purple-500 dark:hover:text-purple-400 transition-all duration-200 font-semibold dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           Login
         </Link>
@@ -66,10 +66,10 @@ export default function Index() {
         <main className="max-w-6xl mx-auto px-4 py-12">
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Modern Fullstack Application Template
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               A powerful starter template combining the best of modern web
               technologies for building scalable B2B applications.
             </p>
@@ -78,14 +78,14 @@ export default function Index() {
           {/* Features Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {/* Web Stack */}
-            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-semibold mb-4 text-gray-900">
+            <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
                 Web Stack
               </h3>
-              <ul className="space-y-3 text-gray-600">
+              <ul className="space-y-3 text-gray-600 dark:text-gray-300">
                 <li className="flex items-center">
                   <svg
-                    className="w-5 h-5 mr-2 text-green-500"
+                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -101,7 +101,7 @@ export default function Index() {
                 </li>
                 <li className="flex items-center">
                   <svg
-                    className="w-5 h-5 mr-2 text-green-500"
+                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -117,7 +117,7 @@ export default function Index() {
                 </li>
                 <li className="flex items-center">
                   <svg
-                    className="w-5 h-5 mr-2 text-green-500"
+                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -133,7 +133,7 @@ export default function Index() {
                 </li>
                 <li className="flex items-center">
                   <svg
-                    className="w-5 h-5 mr-2 text-green-500"
+                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -151,14 +151,14 @@ export default function Index() {
             </div>
 
             {/* API Stack */}
-            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-semibold mb-4 text-gray-900">
+            <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
                 API Stack
               </h3>
-              <ul className="space-y-3 text-gray-600">
+              <ul className="space-y-3 text-gray-600 dark:text-gray-300">
                 <li className="flex items-center">
                   <svg
-                    className="w-5 h-5 mr-2 text-green-500"
+                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -174,7 +174,7 @@ export default function Index() {
                 </li>
                 <li className="flex items-center">
                   <svg
-                    className="w-5 h-5 mr-2 text-green-500"
+                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -190,7 +190,7 @@ export default function Index() {
                 </li>
                 <li className="flex items-center">
                   <svg
-                    className="w-5 h-5 mr-2 text-green-500"
+                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -206,7 +206,7 @@ export default function Index() {
                 </li>
                 <li className="flex items-center">
                   <svg
-                    className="w-5 h-5 mr-2 text-green-500"
+                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -224,21 +224,25 @@ export default function Index() {
             </div>
 
             {/* Quick Start */}
-            <div className="p-6 bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-semibold mb-4 text-gray-900">
+            <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
                 Quick Start
               </h3>
               <div className="space-y-4">
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <code className="text-sm text-gray-800">1. bun install</code>
+                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
+                  <code className="text-sm text-gray-800 dark:text-gray-200">
+                    1. bun install
+                  </code>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <code className="text-sm text-gray-800">
+                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
+                  <code className="text-sm text-gray-800 dark:text-gray-200">
                     2. bun run migration:apply:local
                   </code>
                 </div>
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <code className="text-sm text-gray-800">3. bun run dev</code>
+                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
+                  <code className="text-sm text-gray-800 dark:text-gray-200">
+                    3. bun run dev
+                  </code>
                 </div>
               </div>
             </div>
@@ -246,10 +250,10 @@ export default function Index() {
 
           {/* Call to Action */}
           <div className="text-center">
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Ready to start building your next B2B application?
             </p>
-            <button className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+            <button className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors">
               Get Started
             </button>
           </div>

@@ -1,8 +1,8 @@
 import { LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useNavigate, useParams } from "@remix-run/react";
+import { useLoaderData, useParams } from "@remix-run/react";
 import { and, desc, eq, not } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
-import { UserPlusIcon, Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
