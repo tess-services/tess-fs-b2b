@@ -1,14 +1,14 @@
-import type { AppLoadContext, RequestHandler, ServerBuild } from "react-router";
 import { authMiddleware } from "AuthMiddleware";
-import { Hono } from "hono";
-import { poweredBy } from "hono/powered-by";
-import { staticAssets } from "remix-hono/cloudflare";
-import { remix } from "remix-hono/handler";
-import { and, eq } from "drizzle-orm";
-import { organizationMembership } from "~/db/schema";
-import { createMiddleware } from "hono/factory";
-import { drizzle, DrizzleD1Database } from "drizzle-orm/d1";
 import { UserWithRole } from "better-auth/plugins";
+import { and, eq } from "drizzle-orm";
+import { drizzle, DrizzleD1Database } from "drizzle-orm/d1";
+import { Hono } from "hono";
+import { createMiddleware } from "hono/factory";
+import { poweredBy } from "hono/powered-by";
+import type { AppLoadContext, RequestHandler, ServerBuild } from "react-router";
+import { staticAssets } from "remix-hono/cloudflare";
+import { reactRouter } from "remix-hono/handler";
+import { organizationMembership } from "~/db/schema";
 
 type HonoEnv = {
   Bindings: Env;
@@ -74,7 +74,7 @@ app.use(
     if (process.env.NODE_ENV !== "development" || import.meta.env.PROD) {
       const serverBuild = await import("./build/server");
 
-      return remix({
+      return reactRouter({
         build: serverBuild as unknown as ServerBuild,
         mode: "production",
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

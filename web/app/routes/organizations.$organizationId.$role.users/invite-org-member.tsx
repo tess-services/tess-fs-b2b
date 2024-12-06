@@ -1,4 +1,8 @@
-import { FormEvent, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { UserPlusIcon } from "lucide-react";
+import { useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import * as z from "zod";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -10,17 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Input } from "~/components/ui/input";
-import { useToast } from "~/hooks/use-toast";
-import { organization } from "~/lib/auth.client";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { UserPlusIcon } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -29,9 +22,16 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { useToast } from "~/hooks/use-toast";
+import { organization } from "~/lib/auth.client";
 
 const formSchema = z.object({
   email: z
@@ -49,9 +49,9 @@ const resolver = zodResolver(formSchema);
 
 export function InviteOrgMember({
   organizationId,
-}: {
+}: Readonly<{
   organizationId: string;
-}) {
+}>) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [requestInProgress, setRequestInProgress] = useState(false);
   const { toast } = useToast();
