@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "@remix-run/react";
+import { useNavigate, useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
 import { verifyEmail } from "~/lib/auth.client";
 

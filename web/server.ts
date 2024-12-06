@@ -1,9 +1,4 @@
-import type {
-  AppLoadContext,
-  RequestHandler,
-  ServerBuild,
-} from "@remix-run/cloudflare";
-import { logDevReady } from "@remix-run/cloudflare";
+import type { AppLoadContext, RequestHandler, ServerBuild } from "react-router";
 import { authMiddleware } from "AuthMiddleware";
 import { Hono } from "hono";
 import { poweredBy } from "hono/powered-by";
@@ -96,14 +91,10 @@ app.use(
     } else {
       if (!handler) {
         // @ts-expect-error it's not typed
-        const build = await import("virtual:remix/server-build");
-        const { createRequestHandler } = await import("@remix-run/cloudflare");
+        const build = await import("virtual:react-router/server-build");
+        const { createRequestHandler } = await import("react-router");
 
         handler = createRequestHandler(build, "development");
-
-        if (process.env.NODE_ENV === "development") {
-          logDevReady(build);
-        }
       }
 
       const remixContext = {

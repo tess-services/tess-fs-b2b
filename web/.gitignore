@@ -24,3 +24,4 @@ dist/
 
 drizzle/migrations/*
 !drizzle/migrations/.gitkeep
+.react-router/

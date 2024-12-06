@@ -5,16 +5,18 @@
     "**/.server/**/*.ts",
     "**/.server/**/*.tsx",
     "**/.client/**/*.ts",
-    "**/.client/**/*.tsx"
+    "**/.client/**/*.tsx",
+    ".react-router/types/**/*"
   ],
   "exclude": ["../build/server/remix.js"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": [
-        "@remix-run/cloudflare",
-        "vite/client",
-        "@cloudflare/workers-types/2023-07-01"
+      "react-router",
+      "vite/client",
+      "@cloudflare/workers-types/2023-07-01"
     ],
+    "rootDirs": [".", "./.react-router/types"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
@@ -29,7 +31,6 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./app/*"]
-
     },
 
     // Vite takes care of building everything, not tsc.

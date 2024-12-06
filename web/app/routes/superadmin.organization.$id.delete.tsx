@@ -1,5 +1,5 @@
 // implement Remix action to delete customer by id given in params argument
-import { ActionFunctionArgs, redirect } from "@remix-run/cloudflare";
+import { ActionFunctionArgs, redirect } from "react-router";
 import { and, eq } from "drizzle-orm";
 import { organizationTable } from "~/db/schema";
 
@@ -16,8 +16,10 @@ export const action = async ({ params, context }: ActionFunctionArgs) => {
     throw new Error("Unauthorized");
   }
 
-  await db.delete(organizationTable).where(and(eq(organizationTable.id, organizationId))).execute();
-
+  await db
+    .delete(organizationTable)
+    .where(and(eq(organizationTable.id, organizationId)))
+    .execute();
 
   return redirect("/superadmin/organizations");
 };

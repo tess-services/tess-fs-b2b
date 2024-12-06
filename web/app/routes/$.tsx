@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { LoaderFunctionArgs } from "react-router";
 
 export async function loader({ context }: LoaderFunctionArgs) {
   return Response.json(null, { status: 404 });

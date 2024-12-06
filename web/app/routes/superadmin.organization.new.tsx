@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { useNavigate } from "@remix-run/react";
+import { LoaderFunctionArgs } from "react-router";
+import { useNavigate } from "react-router";
 import { createInsertSchema } from "drizzle-zod";
 import { FieldErrors, useForm } from "react-hook-form";
 import { z } from "zod";

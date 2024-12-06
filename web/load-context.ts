@@ -1,4 +1,4 @@
-import { type AppLoadContext } from "@remix-run/cloudflare";
+import { type AppLoadContext } from "react-router";
 import { Session, User } from "better-auth";
 import { DrizzleD1Database } from "drizzle-orm/d1";
 import { type PlatformProxy } from "wrangler";
@@ -23,22 +23,27 @@ type Cloudflare = Omit<PlatformProxy<Env>, "dispose"> & {
   };
 };
 
-declare module "@remix-run/cloudflare" {
+declare module "react-router" {
   interface AppLoadContext {
     cloudflare: Cloudflare;
   }
 }
 
 type GetLoadContext = (args: {
-  request: Request;
+  request: Request<unknown, unknown>;
   context: { cloudflare: Cloudflare }; // load context _before_ augmentation
 }) => AppLoadContext;
 
 // Shared implementation compatible with Vite, Wrangler, and Cloudflare Pages
-export const getLoadContext: GetLoadContext = ({ context }) => {
+export const getLoadContext: GetLoadContext = ({ request, context }) => {
   return {
-    ...context,
-    user: null,
-    session: null,
+    cloudflare: {
+      ...context.cloudflare,
+      var: {
+        user: null,
+        session: null,
+        db: null,
+      },
+    },
   };
 };

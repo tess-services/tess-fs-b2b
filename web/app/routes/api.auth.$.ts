@@ -1,7 +1,4 @@
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-} from "@remix-run/cloudflare";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { getAuth } from "~/lib/auth.server"; // Adjust the path as necessary
 
 export async function loader({ request, context }: LoaderFunctionArgs) {

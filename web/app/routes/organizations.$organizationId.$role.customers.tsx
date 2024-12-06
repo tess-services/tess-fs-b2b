@@ -1,5 +1,5 @@
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { LoaderFunctionArgs } from "react-router";
+import { Link, useLoaderData, useNavigate } from "react-router";
 import { and, desc, eq } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
 import { Trash2Icon } from "lucide-react";

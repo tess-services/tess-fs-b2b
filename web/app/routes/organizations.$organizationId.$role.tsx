@@ -1,5 +1,5 @@
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { Outlet, useLoaderData, useParams } from "@remix-run/react";
+import { LoaderFunctionArgs } from "react-router";
+import { Outlet, useLoaderData, useParams } from "react-router";
 import { and, eq } from "drizzle-orm";
 import { useEffect } from "react";
 import { TessMenuBar } from "~/components/TessMenuBar";

@@ -1,4 +1,4 @@
-import { NavLink } from "@remix-run/react";
+import { NavLink } from "react-router";
 import { Menu, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { ModeToggle } from "~/components/mode-toggle";

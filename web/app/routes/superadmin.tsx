@@ -4,8 +4,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { NavLink, Outlet } from "@remix-run/react";
+import { LoaderFunctionArgs } from "react-router";
+import { NavLink, Outlet } from "react-router";
 import { Menu, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { ModeToggle } from "~/components/mode-toggle";

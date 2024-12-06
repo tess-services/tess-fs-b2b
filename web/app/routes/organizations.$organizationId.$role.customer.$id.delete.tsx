@@ -1,5 +1,5 @@
 // implement Remix action to delete customer by id given in params argument
-import { ActionFunctionArgs, redirect } from "@remix-run/cloudflare";
+import { ActionFunctionArgs, redirect } from "react-router";
 import { and, eq } from "drizzle-orm";
 import { customerTable } from "~/db/schema";
 import { getAuth } from "~/lib/auth.server";
