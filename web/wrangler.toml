@@ -12,7 +12,7 @@ mode = "smart"
 [[d1_databases]]
 binding = "DB"
 database_name = "tess-fs-b2b-db"
-database_id = "xxx"
+database_id = "73116928-39d4-4fd8-9f9c-edcce1633389a"
 preview_database_id = "LOCAL-INVOICE-001-DB" # Required for Pages local development
 migrations_dir = "migrations"
 
