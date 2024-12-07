@@ -29,3 +29,8 @@
 ```sh
 bun drizzle-kit studio --config=drizzle-dev.config.ts
 ```
+- [tail command of wrangler helps see the logs](https://developers.cloudflare.com/workers/wrangler/commands/#tail)
+
+```sh
+npx wrangler pages deployment tail
+```
