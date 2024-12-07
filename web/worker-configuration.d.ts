@@ -8,6 +8,5 @@ interface Env {
   RESEND_SENDER_EMAIL: string;
   ACCOUNT_ID: string;
   CF_IMAGES_TOKEN: string;
-  ORG_BUCKET: R2Bucket;
   DB: D1Database;
 }

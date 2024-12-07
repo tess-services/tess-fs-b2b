@@ -1,11 +1,10 @@
-import { type AppLoadContext } from "react-router";
 import { Session, User } from "better-auth";
 import { DrizzleD1Database } from "drizzle-orm/d1";
+import { type AppLoadContext } from "react-router";
 import { type PlatformProxy } from "wrangler";
 
 interface Env {
   DB: D1Database;
-  ORG_BUCKET: R2Bucket;
   ACCOUNT_ID: string;
   CF_IMAGES_TOKEN: string;
   BETTER_AUTH_URL: string;
