@@ -12,7 +12,7 @@ mode = "smart"
 [[d1_databases]]
 binding = "DB"
 database_name = "tess-fs-b2b-db"
-database_id = "73116928-39d4-4fd8-9f9c-edcce1633389a"
+database_id = "73116928-39d4-4fd8-9f9c-edcce1633389"
 preview_database_id = "LOCAL-INVOICE-001-DB" # Required for Pages local development
 migrations_dir = "migrations"
 
@@ -26,12 +26,12 @@ NODE_VERSION = "20"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "tess-fs-b2b-db"
-database_id = "73116928-39d4-4fd8-9f9c-edcce1633389a"
+database_id = "73116928-39d4-4fd8-9f9c-edcce1633389"
 migrations_dir = "migrations"
 
 [env.production.vars]
-BETTER_AUTH_TRUSTED_ORIGINS = "https://tess-fs-b2b.pages.dev"
-BETTER_AUTH_URL = "https://tess-fs-b2b.pages.dev"
 RESEND_SENDER_EMAIL = "anand@tessservices.com.au"
+BETTER_AUTH_URL = "https://tess-fs-b2b.pages.dev"
+BETTER_AUTH_TRUSTED_ORIGINS = "https://tess-fs-b2b.pages.dev"
 ACCOUNT_ID = "c72ab688bb982db40b378164180a5b94"
 NODE_VERSION = "20"
