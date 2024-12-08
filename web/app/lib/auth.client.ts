@@ -29,5 +29,6 @@ export const {
   resetPassword,
   verifyEmail,
   organization,
+
   useActiveOrganization,
 } = authClient;

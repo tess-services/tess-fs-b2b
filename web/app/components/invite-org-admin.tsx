@@ -21,7 +21,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { useToast } from "~/hooks/use-toast";
-import { organization } from "~/lib/auth.client";
+import { admin, organization } from "~/lib/auth.client";
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -30,7 +30,9 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function InviteOrgAdmin({ organizationId }: Readonly<{ organizationId: string }>) {
+export function InviteOrgAdmin({
+  organizationId,
+}: Readonly<{ organizationId: string }>) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [requestInProgress, setRequestInProgress] = useState(false);
   const { toast } = useToast();
@@ -53,8 +55,21 @@ export function InviteOrgAdmin({ organizationId }: Readonly<{ organizationId: st
         email: values.email,
         role: "admin",
         organizationId: values.organizationId,
-
       });
+      const usersListResponse = await admin.listUsers({
+        query: {
+          searchField: "email",
+          searchOperator: "contains",
+          searchValue: values.email,
+        },
+      });
+
+      if (usersListResponse.data?.users.length === 1) {
+        await admin.setRole({
+          userId: usersListResponse.data.users[0].id,
+          role: "orgAdmin",
+        });
+      }
 
       toast({
         title: "Success",
@@ -97,7 +112,11 @@ export function InviteOrgAdmin({ organizationId }: Readonly<{ organizationId: st
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="admin@company.com" type="email" {...field} />
+                    <Input
+                      placeholder="admin@company.com"
+                      type="email"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -105,10 +124,7 @@ export function InviteOrgAdmin({ organizationId }: Readonly<{ organizationId: st
             />
 
             <div className="flex justify-end gap-2">
-              <Button
-                type="submit"
-                disabled={requestInProgress}
-              >
+              <Button type="submit" disabled={requestInProgress}>
                 Invite Admin
               </Button>
             </div>
