@@ -53,6 +53,7 @@ export function InviteOrgAdmin({ organizationId }: Readonly<{ organizationId: st
         email: values.email,
         role: "admin",
         organizationId: values.organizationId,
+
       });
 
       toast({
@@ -89,7 +90,6 @@ export function InviteOrgAdmin({ organizationId }: Readonly<{ organizationId: st
         <Form {...form}>
           <form onSubmit={form.handleSubmit(inviteAdmin)} className="space-y-4">
             <input type="hidden" name="organizationId" value={organizationId} />
-
             <FormField
               control={form.control}
               name="email"

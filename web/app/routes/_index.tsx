@@ -10,6 +10,37 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+const GreenTickMark = () => (
+  <svg
+    className="h-6 w-6 flex-none text-green-600"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+
+// At the top of the file
+const API_STACK_ITEMS = {
+  'Hono JS Runtime': 'https://hono.dev',
+  'Cloudflare R2 Storage': 'https://developers.cloudflare.com/r2/',
+  'D1 Database': 'https://developers.cloudflare.com/d1/',
+  'Drizzle ORM': 'https://orm.drizzle.team'
+} as const;
+
+const WEB_STACK_ITEMS = {
+  'Remix - Modern React Framework': 'https://remix.run',
+  'Shadcn UI & Tailwind CSS': 'https://ui.shadcn.com',
+  'Better Auth Authentication': 'https://www.better-auth.com/',
+  'TypeScript': 'https://www.typescriptlang.org'
+} as const;
+
 export default function Index() {
   const [userSession] = useUserSession();
 
@@ -83,70 +114,19 @@ export default function Index() {
                 Web Stack
               </h3>
               <ul className="space-y-3 text-gray-600 dark:text-gray-300">
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Remix - Modern React Framework
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Shadcn UI & Tailwind CSS
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Better Auth Authentication
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  TypeScript
-                </li>
+                {Object.entries(WEB_STACK_ITEMS).map(([name, url]) => (
+                  <li key={name} className="flex items-center">
+                    <GreenTickMark />
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 dark:hover:text-blue-400 ml-2"
+                    >
+                      {name}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -156,70 +136,19 @@ export default function Index() {
                 API Stack
               </h3>
               <ul className="space-y-3 text-gray-600 dark:text-gray-300">
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Hono JS Runtime
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Cloudflare R2 Storage
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  D1 Database
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2 text-green-500 dark:text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  Drizzle ORM
-                </li>
+                {Object.entries(API_STACK_ITEMS).map(([name, url]) => (
+                  <li key={name} className="flex items-center">
+                    <GreenTickMark />
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 dark:hover:text-blue-400 ml-2"
+                    >
+                      {name}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
 

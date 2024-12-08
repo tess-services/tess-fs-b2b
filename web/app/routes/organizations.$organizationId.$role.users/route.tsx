@@ -1,8 +1,13 @@
-import { LoaderFunctionArgs, redirect } from "react-router";
-import { useLoaderData, useParams } from "react-router";
 import { and, desc, eq, not } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
-import { Trash2Icon } from "lucide-react";
+import { Ban, DoorOpen } from "lucide-react";
+import {
+  LoaderFunctionArgs,
+  redirect,
+  useLoaderData,
+  useParams,
+  useRevalidator,
+} from "react-router";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
@@ -13,7 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { user, organizationMembership } from "~/db/schema";
+import { organizationMembership, user } from "~/db/schema";
+import { admin } from "~/lib/auth.client";
 import { getAuth } from "~/lib/auth.server";
 import { InviteOrgMember } from "./invite-org-member";
 
@@ -26,6 +32,7 @@ type Membership = z.infer<typeof selectMembershipSchema>;
 type LoaderData = {
   hasInvitePermission: boolean;
   hasMemberEditPermission: boolean;
+  currentUser: User;
   users: {
     user: User;
     member: Membership;
@@ -80,6 +87,7 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
     .execute();
 
   return Response.json({
+    currentUser,
     users,
     hasInvitePermission: invitePermissionCheck.success,
     hasMemberEditPermission: memberPermissionCheck.success,
@@ -87,13 +95,33 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
 }
 
 export default function Users() {
-  const { users, hasInvitePermission, hasMemberEditPermission } =
+  const { currentUser, users, hasInvitePermission, hasMemberEditPermission } =
     useLoaderData<LoaderData>();
   const { organizationId } = useParams();
+  const revalidator = useRevalidator();
 
   if (!organizationId) {
     throw new Error("Organization ID is required");
   }
+
+  const handleUserActionSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    const actionType = data.get("actionType") as string;
+    const userId = data.get("userId") as string;
+
+    if (actionType === "ban") {
+      await admin.banUser({ userId });
+    } else {
+      await admin.unbanUser({ userId });
+    }
+
+    revalidator.revalidate();
+  };
 
   return (
     <div className="mx-auto lg:max-w-7xl lg:p-0 p-3">
@@ -111,6 +139,7 @@ export default function Users() {
           <TableHead>Role</TableHead>
           <TableHead>Joined At</TableHead>
           {hasMemberEditPermission && <TableHead>Actions</TableHead>}
+          <TableCell>Status</TableCell>
         </TableHeader>
         <TableBody>
           {users.map((user) => {
@@ -138,13 +167,37 @@ export default function Users() {
                 </TableCell>
                 {hasMemberEditPermission && (
                   <TableCell>
-                    <form method="post" action={`remove/${u.id}`}>
-                      <Button variant="outline" size="icon" type="submit">
-                        <Trash2Icon className="h-4 w-4" />
+                    <form
+                      onSubmit={handleUserActionSubmit}
+                      className="space-y-4"
+                    >
+                      <input type="hidden" name="userId" defaultValue={u.id} />
+                      <input
+                        type="hidden"
+                        name="actionType"
+                        defaultValue={u.banned ? "unban" : "ban"}
+                      />
+                      <Button
+                        variant="outline"
+                        type="submit"
+                        disabled={currentUser.id === u.id}
+                      >
+                        {u.banned ? (
+                          <>
+                            Unban
+                            <DoorOpen className="h-4 w-4" />
+                          </>
+                        ) : (
+                          <>
+                            Ban
+                            <Ban className="h-4 w-4" />
+                          </>
+                        )}
                       </Button>
                     </form>
                   </TableCell>
                 )}
+                <TableCell>{u.banned ? "Banned" : "Active"}</TableCell>
               </TableRow>
             );
           })}

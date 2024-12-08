@@ -50,6 +50,13 @@
       "when": 1733085709573,
       "tag": "0006_rich_nightmare",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1733608074051,
+      "tag": "0007_careless_paladin",
+      "breakpoints": true
     }
   ]
 }

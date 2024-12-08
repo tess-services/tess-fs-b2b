@@ -4,7 +4,6 @@ import { and, eq } from "drizzle-orm";
 import { useEffect } from "react";
 import { TessMenuBar } from "~/components/TessMenuBar";
 import { user, organizationMembership, organizationTable } from "~/db/schema";
-import { useSession } from "~/lib/auth.client";
 import { setUserSession } from "~/lib/localStorageManager";
 import { OrgRoles } from "~/lib/permissions";
 

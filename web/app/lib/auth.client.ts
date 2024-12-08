@@ -1,7 +1,6 @@
+import { adminClient, organizationClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
-import { adminClient } from "better-auth/client/plugins";
-import { organizationClient } from "better-auth/client/plugins";
-import { adminRole, ownerRole, memberRole, accessControl } from "./permissions";
+import { accessControl, adminRole, memberRole, ownerRole } from "./permissions";
 
 // https://remix.run/docs/en/main/guides/envvars#browser-environment-variables
 
@@ -25,7 +24,7 @@ export const {
   signIn,
   signUp,
   signOut,
-  useSession,
+  // useSession, // useSession is not supported in React router 7, don't know why.
   forgetPassword,
   resetPassword,
   verifyEmail,

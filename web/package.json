@@ -6,7 +6,7 @@
   "scripts": {
     "migration:generate": "drizzle-kit generate",
     "mgd": "drizzle-kit generate --config drizzle-dev.config.ts",
-    "migrations:up": "drizzle-kit up",
+    "migration:up": "drizzle-kit up",
     "migration:apply:local": "wrangler d1 migrations apply tess-fs-b2b-db --local",
     "mal": "wrangler d1 migrations apply tess-fs-b2b-db --local",
     "migration:apply:remote": "wrangler d1 migrations apply tess-fs-b2b-db --remote",

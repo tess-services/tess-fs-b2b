@@ -14,6 +14,11 @@ export const user = sqliteTable("user", {
   image: text("image"), // user's image url
 
   role: text("role"), // this should be set as "admin" for superadmin like us the SaaS provider.
+
+  banned: integer("banned", { mode: "boolean" }).default(false),
+  banReason: text("banReason"),
+  banExpires: integer("banExpires", { mode: "timestamp" }),
+
   createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`
   ),

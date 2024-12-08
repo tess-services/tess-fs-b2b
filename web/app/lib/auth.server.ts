@@ -1,16 +1,18 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { drizzle } from "drizzle-orm/d1";
 import { admin, organization } from "better-auth/plugins";
 import { type User } from "better-auth/types";
+import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../db/schema";
+import { accessControl, adminRole, memberRole, ownerRole } from "./permissions";
 import { sendEmail } from "./sendEmail";
-import { adminRole, ownerRole, memberRole, accessControl } from "./permissions";
 
 const getBetterAuth = (bindings: Env) =>
   betterAuth({
     plugins: [
-      admin(),
+      admin({
+        adminRole: ["admin", "orgAdmin"],
+      }),
       organization({
         schema: {
           organization: {
