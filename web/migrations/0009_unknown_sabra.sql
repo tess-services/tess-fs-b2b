@@ -1,0 +1,1 @@
+ALTER TABLE `imageFileMetadata` ADD `imageUrl` text NOT NULL;

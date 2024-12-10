@@ -1,13 +1,12 @@
-import { LoaderFunctionArgs } from "react-router";
-import { useLoaderData, useNavigate } from "react-router";
 import { eq } from "drizzle-orm";
 import { FieldErrors, useForm } from "react-hook-form";
+import { LoaderFunctionArgs, useLoaderData, useNavigate } from "react-router";
 import { OrganizationForm } from "~/components/organization-form";
 import { Button } from "~/components/ui/button";
-import { organizationTable } from "~/db/schema";
+import { imageFileMetadata, organizationTable } from "~/db/schema";
 import { useToast } from "~/hooks/use-toast";
-import { OrganizationFormType, resolver } from "~/lib/organization";
 import { organization as authOrganizationClient } from "~/lib/auth.client";
+import { OrganizationFormType, resolver } from "~/lib/organization";
 
 export type ActionData = {
   success?: boolean;
@@ -29,6 +28,10 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   const organizations = await db
     .select()
     .from(organizationTable)
+    .leftJoin(
+      imageFileMetadata,
+      eq(organizationTable.id, imageFileMetadata.attachedEntityId)
+    )
     .where(eq(organizationTable.id, params.id))
     .execute();
 
@@ -36,13 +39,16 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     throw new Error("Organization not found");
   }
 
-  return { organization: organizations[0] };
+  return {
+    organization: organizations[0].organization,
+    imageMetaData: organizations[0].imageFileMetadata,
+  };
 }
 
 export default function EditOrganization() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { organization } = useLoaderData<typeof loader>();
+  const { organization, imageMetaData } = useLoaderData<typeof loader>();
 
   const form = useForm<OrganizationFormType>({
     mode: "onSubmit",
@@ -52,11 +58,11 @@ export default function EditOrganization() {
 
   const updateOrg = async (data: OrganizationFormType) => {
     try {
+      console.log("....data....", data);
       await authOrganizationClient.update({
         data: {
           name: data.name,
           slug: data.slug,
-          logo: data.logo ?? undefined,
           metadata: data.metadata ?? undefined,
         },
         organizationId: data.id,
@@ -88,7 +94,7 @@ export default function EditOrganization() {
         </Button>
       </div>
 
-      <OrganizationForm form={form} mode="edit" onSubmit={updateOrg} />
+      <OrganizationForm form={form} mode="edit" onSubmit={updateOrg} logoUrl={imageMetaData?.imageUrl} />
     </div>
   );
 }

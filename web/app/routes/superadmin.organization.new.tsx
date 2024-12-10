@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderFunctionArgs } from "react-router";
-import { useNavigate } from "react-router";
 import { createInsertSchema } from "drizzle-zod";
+import { nanoid } from "nanoid";
 import { FieldErrors, useForm } from "react-hook-form";
+import { type LoaderFunctionArgs, useNavigate } from "react-router";
 import { z } from "zod";
+import { OrganizationForm } from "~/components/organization-form";
 import { Button } from "~/components/ui/button";
 import { organizationTable } from "~/db/schema";
-import { OrganizationForm } from "~/components/organization-form";
 import { useToast } from "~/hooks/use-toast";
 import { organization as authOrganizationClient } from "~/lib/auth.client";
 import { organizationMetadataSchema } from "~/lib/organization";
@@ -14,7 +14,6 @@ import { organizationMetadataSchema } from "~/lib/organization";
 export const insertOrganizationSchema = createInsertSchema(organizationTable, {
   createdAt: z.date({ coerce: true }),
   updatedAt: z.date({ coerce: true }),
-  id: z.undefined(),
   metadata: organizationMetadataSchema,
 });
 
@@ -47,18 +46,20 @@ export default function AddOrganization() {
     mode: "onSubmit",
     resolver,
     defaultValues: {
+      id: nanoid(),
       name: undefined,
       slug: undefined,
       metadata: {},
     },
   });
 
-  const createOrg = async (data: CreateOrganizationFormType) => {
+  const createOrg = async (
+    data: CreateOrganizationFormType
+  ) => {
     try {
       await authOrganizationClient.create({
         name: data.name,
         slug: data.slug,
-        logo: data.logo ?? undefined,
         metadata: data.metadata ?? undefined,
       });
 

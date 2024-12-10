@@ -30,7 +30,6 @@ export const selectOrganizationSchema = createSelectSchema(organizationTable)
     id: true,
     name: true,
     slug: true,
-    logo: true,
   })
   .extend({
     metadata: organizationMetadataSchema.nullable(),

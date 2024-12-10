@@ -94,7 +94,6 @@ export const organizationTable = sqliteTable("organization", {
     .$defaultFn(() => nanoid()),
   name: text("name").notNull(),
   slug: text("slug").notNull(),
-  logo: text("logo"),
   metadata: text("metadata", { mode: "json" }).$type<OrganizationMetadata>(),
 
   createdAt: integer("createdAt", { mode: "timestamp" }).default(
@@ -201,12 +200,14 @@ export const invitation = sqliteTable("invitation", {
 
 export const imageFileMetadata = sqliteTable("imageFileMetadata", {
   id: text("id").primaryKey(), // id of the image in image storage.
-
+  name: text("name").notNull(),
+  imageUrl: text("imageUrl").notNull(),
   uploadedByUserId: text("uploadedByUserId")
     .notNull()
     .references(() => user.id),
   organizationId: text("organizationId").references(() => organizationTable.id),
 
+  imageCategory: text("imageCategory"),
   attachedEntityType: text("attachedEntityType"),
   attachedEntityId: text("attachedEntityId"),
 

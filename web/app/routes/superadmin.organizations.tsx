@@ -1,8 +1,9 @@
-import { LoaderFunctionArgs } from "react-router";
-import { Link, useLoaderData, useNavigate } from "react-router";
 import { desc } from "drizzle-orm";
+import { sql } from "drizzle-orm/sql";
 import { Trash2Icon } from "lucide-react";
+import { Link, LoaderFunctionArgs, useLoaderData, useNavigate } from "react-router";
 import { z } from "zod";
+import { InviteOrgAdmin } from "~/components/invite-org-admin";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -13,8 +14,6 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { organizationMembership, organizationTable } from "~/db/schema";
-import { sql } from "drizzle-orm/sql";
-import { InviteOrgAdmin } from "~/components/invite-org-admin";
 import { selectOrganizationSchema } from "~/lib/organization";
 
 type OrganizationRow = z.infer<typeof selectOrganizationSchema> & {
@@ -33,7 +32,6 @@ export async function loader({ context }: LoaderFunctionArgs) {
       id: organizationTable.id,
       name: organizationTable.name,
       slug: organizationTable.slug,
-      logo: organizationTable.logo,
       metadata: organizationTable.metadata,
       hasOwner: sql<boolean>`EXISTS (
         SELECT 1 FROM ${organizationMembership} 
