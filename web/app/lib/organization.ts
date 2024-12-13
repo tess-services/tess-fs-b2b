@@ -19,6 +19,9 @@ export const organizationMetadataSchema = z
 export type OrganizationMetadata = z.infer<typeof organizationMetadataSchema>;
 
 const updateOrganizationSchema = createInsertSchema(organizationTable, {
+  name: z.string(),
+  slug: z.string(),
+  logo: z.string().optional(),
   metadata: organizationMetadataSchema,
   createdAt: z.date({ coerce: true }),
   updatedAt: z.date({ coerce: true }),

@@ -74,10 +74,12 @@ export default function AddOrganization() {
       name: undefined,
       slug: undefined,
       metadata: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   });
   const actionData = useActionData<ActionData>();
-
+  console.log(form.formState.errors)
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">

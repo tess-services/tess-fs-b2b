@@ -12,7 +12,7 @@ const sessionStorage = createCookieSessionStorage({
     sameSite: "lax",
     secrets: ["s3cr3t"],
     // Set domain and secure only if in production
-    ...(isProduction ? { domain: "tess-fs.pages.dev", secure: true } : {}),
+    ...(isProduction ? { domain: "tess-fs-b2b.pages.dev", secure: true } : {}),
   },
 });
 

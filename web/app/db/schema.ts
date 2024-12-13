@@ -39,7 +39,7 @@ export const session = sqliteTable("session", {
   userAgent: text("userAgent"),
   token: text("token"),
   activeOrganizationId: text("activeOrganizationId"),
-
+  impersonatedBy: text("impersonatedBy"),
   createdAt: integer("createdAt", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`
   ),
@@ -94,6 +94,7 @@ export const organizationTable = sqliteTable("organization", {
     .$defaultFn(() => nanoid()),
   name: text("name").notNull(),
   slug: text("slug").notNull(),
+  logo: text("logo"),
   metadata: text("metadata", { mode: "json" }).$type<OrganizationMetadata>(),
 
   createdAt: integer("createdAt", { mode: "timestamp" }).default(
