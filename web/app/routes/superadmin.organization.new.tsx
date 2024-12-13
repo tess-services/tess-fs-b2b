@@ -1,4 +1,3 @@
-import { json } from "@remix-run/node";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { FieldErrors } from "react-hook-form";
@@ -54,14 +53,14 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
       return Response.json({ success: true });
     } catch (error) {
-      return json(
+      return Response.json(
         { error: "Failed to create organization", errors: error },
         { status: 400 }
       );
     }
   }
 
-  return json({ error: "Invalid data" }, { status: 400 });
+  return Response.json({ error: "Invalid data" }, { status: 400 });
 }
 
 export default function AddOrganization() {
