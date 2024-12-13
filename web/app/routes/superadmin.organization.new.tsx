@@ -1,31 +1,20 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createInsertSchema } from "drizzle-zod";
+import { json } from "@remix-run/node";
+import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { FieldErrors, useForm } from "react-hook-form";
-import { type LoaderFunctionArgs, useNavigate } from "react-router";
-import { z } from "zod";
+import { FieldErrors } from "react-hook-form";
+import { ActionFunctionArgs, type LoaderFunctionArgs, useActionData, useNavigate } from "react-router";
+import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { OrganizationForm } from "~/components/organization-form";
 import { Button } from "~/components/ui/button";
 import { organizationTable } from "~/db/schema";
-import { useToast } from "~/hooks/use-toast";
-import { organization as authOrganizationClient } from "~/lib/auth.client";
-import { organizationMetadataSchema } from "~/lib/organization";
+import { getAuth } from "~/lib/auth.server";
+import { OrganizationFormType, resolver } from "~/lib/organization";
 
-export const insertOrganizationSchema = createInsertSchema(organizationTable, {
-  createdAt: z.date({ coerce: true }),
-  updatedAt: z.date({ coerce: true }),
-  metadata: organizationMetadataSchema,
-});
-
-export type CreateOrganizationFormType = z.infer<
-  typeof insertOrganizationSchema
->;
-const resolver = zodResolver(insertOrganizationSchema);
 
 export type ActionData = {
   success?: boolean;
   error?: string;
-  errors?: FieldErrors<CreateOrganizationFormType>;
+  errors?: FieldErrors<OrganizationFormType>;
 };
 
 export async function loader({ context }: LoaderFunctionArgs) {
@@ -38,11 +27,47 @@ export async function loader({ context }: LoaderFunctionArgs) {
   return null;
 }
 
+export async function action({ context, request }: ActionFunctionArgs) {
+  const { db, user } = context.cloudflare.var;
+
+  if (!user || !db) {
+    throw new Error("Unauthorized");
+  }
+
+
+  const { errors, data } = await getValidatedFormData<OrganizationFormType>(request, resolver, false);
+
+  if (errors) {
+    return Response.json({ errors });
+  }
+
+  if (data) {
+    try {
+      const { metadata, ...dataWithoutMetadata } = data;
+      const auth = getAuth(context);
+      await auth.api.createOrganization({
+        headers: request.headers,
+        body: dataWithoutMetadata
+      });
+
+      await db.update(organizationTable).set({ metadata }).where(eq(organizationTable.id, dataWithoutMetadata.id));
+
+      return Response.json({ success: true });
+    } catch (error) {
+      return json(
+        { error: "Failed to create organization", errors: error },
+        { status: 400 }
+      );
+    }
+  }
+
+  return json({ error: "Invalid data" }, { status: 400 });
+}
+
 export default function AddOrganization() {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  const form = useForm<CreateOrganizationFormType>({
+  const form = useRemixForm<OrganizationFormType>({
     mode: "onSubmit",
     resolver,
     defaultValues: {
@@ -52,30 +77,7 @@ export default function AddOrganization() {
       metadata: {},
     },
   });
-
-  const createOrg = async (
-    data: CreateOrganizationFormType
-  ) => {
-    try {
-      await authOrganizationClient.create({
-        name: data.name,
-        slug: data.slug,
-        metadata: data.metadata ?? undefined,
-      });
-
-      toast({
-        title: "Success",
-        description: "Organization created successfully",
-      });
-      navigate("/superadmin/organizations");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit form",
-        variant: "destructive",
-      });
-    }
-  };
+  const actionData = useActionData<ActionData>();
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -89,7 +91,7 @@ export default function AddOrganization() {
         </Button>
       </div>
 
-      <OrganizationForm form={form} onSubmit={createOrg} />
+      <OrganizationForm form={form} mode="new" actionData={actionData} />
     </div>
   );
 }

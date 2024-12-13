@@ -1,11 +1,10 @@
 import { eq } from "drizzle-orm";
-import { FieldErrors, useForm } from "react-hook-form";
-import { LoaderFunctionArgs, useLoaderData, useNavigate } from "react-router";
+import { FieldErrors } from "react-hook-form";
+import { ActionFunctionArgs, LoaderFunctionArgs, useActionData, useLoaderData, useNavigate } from "react-router";
+import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { OrganizationForm } from "~/components/organization-form";
-import { Button } from "~/components/ui/button";
 import { imageFileMetadata, organizationTable } from "~/db/schema";
 import { useToast } from "~/hooks/use-toast";
-import { organization as authOrganizationClient } from "~/lib/auth.client";
 import { OrganizationFormType, resolver } from "~/lib/organization";
 
 export type ActionData = {
@@ -21,7 +20,8 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
 
-  if (!params.id) {
+  const { id } = params;
+  if (!id) {
     throw new Error("Organization ID is required");
   }
 
@@ -32,10 +32,10 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
       imageFileMetadata,
       eq(organizationTable.id, imageFileMetadata.attachedEntityId)
     )
-    .where(eq(organizationTable.id, params.id))
+    .where(eq(organizationTable.id, id))
     .execute();
 
-  if (!organizations.length) {
+  if (organizations.length === 0) {
     throw new Error("Organization not found");
   }
 
@@ -45,56 +45,91 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   };
 }
 
-export default function EditOrganization() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { organization, imageMetaData } = useLoaderData<typeof loader>();
+export async function action({ params, request, context }: ActionFunctionArgs) {
+  const { db, user } = context.cloudflare.var;
+  const { id } = params;
 
-  const form = useForm<OrganizationFormType>({
+  if (!user || !db || !id) {
+    throw new Error("Unauthorized or Invalid ID");
+  }
+
+  const { errors, data } = await getValidatedFormData<OrganizationFormType>(
+    request,
+    resolver,
+    false
+  );
+
+  if (errors) {
+    return Response.json({ errors });
+  }
+
+  try {
+    // Update organization
+    await db
+      .update(organizationTable)
+      .set({
+        name: data.name,
+        slug: data.slug,
+        metadata: data.metadata,
+        updatedAt: new Date(),
+      })
+      .where(eq(organizationTable.id, id));
+
+    return Response.json({ success: true });
+  } catch (error) {
+    return Response.json(
+      { error: "Failed to update organization" },
+      { status: 500 }
+    );
+  }
+}
+
+export default function EditOrganization() {
+  const { organization, imageMetaData } = useLoaderData<{
+    organization: OrganizationFormType;
+    imageMetaData: any;
+  }>();
+  const actionData = useActionData<ActionData>();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const form = useRemixForm<OrganizationFormType>({
     mode: "onSubmit",
     resolver,
     defaultValues: organization,
   });
 
-  const updateOrg = async (data: OrganizationFormType) => {
-    try {
-      console.log("....data....", data);
-      await authOrganizationClient.update({
-        data: {
-          name: data.name,
-          slug: data.slug,
-          metadata: data.metadata ?? undefined,
-        },
-        organizationId: data.id,
-      });
+  if (actionData?.success) {
+    toast({
+      title: "Success",
+      description: "Organization updated successfully",
+    });
+    navigate("/superadmin/organizations")
+  }
 
-      toast({
-        title: "Success",
-        description: "Organization updated successfully",
-      });
-      navigate("/superadmin/organizations");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit form",
-        variant: "destructive",
-      });
-    }
-  };
+  if (actionData?.error) {
+    toast({
+      title: "Error",
+      description: actionData.error,
+      variant: "destructive",
+    });
+    navigate("/superadmin/organizations")
+  }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Edit Organization</h1>
-        <Button
-          variant="outline"
-          onClick={() => navigate("/superadmin/organizations")}
-        >
-          Cancel
-        </Button>
+    <div className="container mx-auto py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">Edit Organization</h1>
       </div>
 
-      <OrganizationForm form={form} mode="edit" onSubmit={updateOrg} logoUrl={imageMetaData?.imageUrl} />
+      <div className="grid gap-8">
+        <OrganizationForm
+          form={form}
+          mode="edit"
+          logoUrl={imageMetaData?.imageUrl}
+          actionData={actionData}
+        />
+      </div>
     </div>
   );
 }

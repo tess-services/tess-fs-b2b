@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useFetcher, useNavigate, useNavigation } from "react-router";
+import { Form, useFetcher, useNavigate, useNavigation } from "react-router";
+import { RemixFormProvider } from "remix-hook-form";
 import { Button } from "~/components/ui/button";
+
 import {
-  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -11,16 +12,18 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { useToast } from "~/hooks/use-toast";
+import { ActionData } from "~/routes/superadmin.organization.new";
 
 export const OrganizationForm = ({
   form,
   mode = "new",
-  onSubmit,
   logoUrl: logoUrlDefault,
+  actionData,
 }: {
+  actionData?: ActionData;
   form: any;
   mode?: "edit" | "new";
-  onSubmit: (data: any) => void;
   logoUrl?: string;
 }) => {
   const formNavigation = useNavigation();
@@ -28,6 +31,29 @@ export const OrganizationForm = ({
   const isSubmitting = formNavigation.state === "submitting";
   const fetcher = useFetcher();
   const [logoUrl, setLogoUrl] = useState<string | undefined>(logoUrlDefault);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    console.log("actionData", actionData);
+    if (actionData?.success) {
+      toast({
+        title: "Organization saved successfully",
+        description:
+          mode === "edit"
+            ? "Organization has been updated"
+            : "New Organization has been added to your organization",
+        variant: "default",
+      });
+      navigate("../organizations");
+    }
+    if (actionData?.error) {
+      toast({
+        title: "Failed to save organization",
+        description: actionData.error,
+        variant: "destructive",
+      });
+    }
+  }, [actionData]);
 
   useEffect(() => {
     if (fetcher.data) {
@@ -38,27 +64,25 @@ export const OrganizationForm = ({
   const handleImageUpload = async (e: any) => {
     e.preventDefault();
 
-    const resp = await fetch(`/superadmin/organization/${form.getValues().id}/image`, {
-      method: "POST",
-      body: new FormData(e.target),
-      headers: {
-        encType: "multipart/form-data",
-      },
-    });
-    const respBody = await resp.json() as any;
+    const resp = await fetch(
+      `/superadmin/organization/${form.getValues().id}/image`,
+      {
+        method: "POST",
+        body: new FormData(e.target),
+        headers: {
+          encType: "multipart/form-data",
+        },
+      }
+    );
+    const respBody = (await resp.json()) as any;
     setLogoUrl(respBody.imageUrl);
     form.setValue("logoFileId", respBody.fileId);
-    console.log(respBody);
-  }
-  console.log("errors========", form.formState.errors)
+  };
+
   return (
     <>
-      <Form {...form}>
-        <form
-          id="organization-form"
-          method="post"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
+      <RemixFormProvider {...form}>
+        <Form id="organization-form" method="post" onSubmit={form.handleSubmit}>
           <FormField
             control={form.control}
             name="name"
@@ -171,8 +195,8 @@ export const OrganizationForm = ({
               </FormItem>
             )}
           />
-        </form>
-      </Form>
+        </Form>
+      </RemixFormProvider>
       <fetcher.Form
         id="image-form"
         method="post"
@@ -193,9 +217,7 @@ export const OrganizationForm = ({
             }
           }}
         />
-        {logoUrl && (
-          <img src={logoUrl} alt="Logo" className="mt-2 w-60" />
-        )}
+        {logoUrl && <img src={logoUrl} alt="Logo" className="mt-2 w-60" />}
         <Button
           type="submit"
           disabled={!logoUrl || isSubmitting}
