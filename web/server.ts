@@ -43,6 +43,7 @@ app.use(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         getLoadContext(c) {
+          console.log("...........c.env", c.env);
           const db = drizzle(c.env.DB, { schema });
           return DatabaseContext.run(db, () => ({
             cloudflare: {
