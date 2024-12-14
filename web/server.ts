@@ -34,11 +34,15 @@ app.use(
     await next();
   },
   async (c, next) => {
+    const db = drizzle(c.env.DB, { schema });
+
+    return DatabaseContext.run(db, () => next());
+  },
+  async (c, next) => {
     if (process.env.NODE_ENV !== "development" || import.meta.env.PROD) {
       const serverBuild = await import("./build/server");
-      const db = drizzle(c.env.DB, { schema });
 
-      return DatabaseContext.run(db, () => reactRouter({
+      return reactRouter({
         build: serverBuild as unknown as ServerBuild,
         mode: "production",
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -49,11 +53,9 @@ app.use(
               env: c.env,
               var: c.var,
             },
-            db,
-
           };
         },
-      }))(c, next);
+      })(c, next);
     } else {
       if (!handler) {
         // @ts-expect-error it's not typed
@@ -69,12 +71,9 @@ app.use(
           var: c.var,
         },
       } as unknown as AppLoadContext;
-
-      const db = drizzle(c.env.DB, { schema });
-
-      return DatabaseContext.run(db, () => handler!(c.req.raw, remixContext));
+      return handler!(c.req.raw, remixContext);
     }
-  }
+  },
 );
 
 app.use("organizations/:organizationId/:role", async (c, next) => {
@@ -85,6 +84,7 @@ app.use("organizations/:organizationId/:role", async (c, next) => {
   if (!user) {
     return c.redirect("/signin");
   }
+
   const membership = await db
     .select()
     .from(organizationMembership)
