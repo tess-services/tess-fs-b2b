@@ -50,6 +50,7 @@ app.use(async (c, next) => {
 // Router middleware
 app.use(
   async (c, next) => {
+    console.log("========process.env.NODE_ENV ", process.env.NODE_ENV);
     if (process.env.NODE_ENV !== "development" || import.meta.env.PROD) {
       const serverBuild = await import("./build/server");
 
