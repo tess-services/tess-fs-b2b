@@ -34,6 +34,7 @@ app.use(
     await next();
   },
   async (c, next) => {
+    console.log("Creating database connection and c.env.DB is ", c.env.DB);
     const db = drizzle(c.env.DB, { schema });
 
     return DatabaseContext.run(db, () => next());
