@@ -13,6 +13,7 @@ export function database() {
 
   if (!db) {
     console.trace();
+    console.error("=====> DatabaseContext not set");
     throw new Error("DatabaseContext not set");
   }
 
