@@ -28,17 +28,24 @@ app.use(authMiddleware);
 
 // Single DB middleware
 app.use(async (c, next) => {
-  const db = drizzle(c.env.DB, { schema });
+  try {
+    console.log("trying ot set DatabaseContext ========");
 
-  return DatabaseContext.run(db, async () => {
-    try {
-      console.log("===> DatabaseContext set");
-      return await next();
-    } catch (error) {
-      console.error('Database error:', error);
-      throw error;
-    }
-  });
+    const db = drizzle(c.env.DB, { schema });
+
+    return DatabaseContext.run(db, async () => {
+      try {
+        console.log("===> DatabaseContext set");
+        return await next();
+      } catch (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+    });
+  } catch (error) {
+    console.error('error in create database context Database error:', error);
+    throw error;
+  }
 });
 
 // Static assets middleware
