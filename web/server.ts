@@ -26,19 +26,29 @@ app.use(poweredBy());
 
 app.use(authMiddleware);
 
-app.use(
-  async (c, next) => {
-    if (process.env.NODE_ENV !== "development" || import.meta.env.PROD) {
-      return staticAssets()(c, next);
+// Single DB middleware
+app.use(async (c, next) => {
+  const db = drizzle(c.env.DB, { schema });
+  return DatabaseContext.run(db, async () => {
+    try {
+      return await next();
+    } catch (error) {
+      console.error('Database error:', error);
+      throw error;
     }
-    await next();
-  },
-  async (c, next) => {
-    console.log("Creating database connection and c.env.DB is ", c.env.DB);
-    const db = drizzle(c.env.DB, { schema });
+  });
+});
 
-    return DatabaseContext.run(db, () => next());
-  },
+// Static assets middleware
+app.use(async (c, next) => {
+  if (process.env.NODE_ENV !== "development" || import.meta.env.PROD) {
+    return staticAssets()(c, next);
+  }
+  await next();
+});
+
+// Router middleware
+app.use(
   async (c, next) => {
     if (process.env.NODE_ENV !== "development" || import.meta.env.PROD) {
       const serverBuild = await import("./build/server");
@@ -57,23 +67,26 @@ app.use(
           };
         },
       })(c, next);
-    } else {
-      if (!handler) {
-        // @ts-expect-error it's not typed
-        const build = await import("virtual:react-router/server-build");
-        const { createRequestHandler } = await import("react-router");
-
-        handler = createRequestHandler(build, "development");
-      }
-
-      const remixContext = {
-        cloudflare: {
-          env: c.env,
-          var: c.var,
-        },
-      } as unknown as AppLoadContext;
-      return handler!(c.req.raw, remixContext);
     }
+
+    // dev mode only
+    if (!handler) {
+      // @ts-expect-error it's not typed
+      const build = await import("virtual:react-router/server-build");
+      const { createRequestHandler } = await import("react-router");
+
+      handler = createRequestHandler(build, "development");
+    }
+
+    const remixContext = {
+      cloudflare: {
+        env: c.env,
+        var: c.var,
+      },
+    } as unknown as AppLoadContext;
+
+    return handler!(c.req.raw, remixContext);
+
   },
 );
 
