@@ -71,7 +71,7 @@ app.use(
     }
 
     // dev mode only
-    if (!handler) {
+    if (!handler && process.env.NODE_ENV === "development") {
       // @ts-expect-error it's not typed
       const build = await import("virtual:react-router/server-build");
       const { createRequestHandler } = await import("react-router");
