@@ -12,6 +12,7 @@ export function database() {
   const db = DatabaseContext.getStore();
 
   if (!db) {
+    console.trace();
     throw new Error("DatabaseContext not set");
   }
 
