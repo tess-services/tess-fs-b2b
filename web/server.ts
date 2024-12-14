@@ -3,12 +3,13 @@ import { UserWithRole } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
 import { drizzle, DrizzleD1Database } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import { createMiddleware } from "hono/factory";
 import { poweredBy } from "hono/powered-by";
 import type { AppLoadContext, RequestHandler, ServerBuild } from "react-router";
 import { staticAssets } from "remix-hono/cloudflare";
 import { reactRouter } from "remix-hono/handler";
+import { database, DatabaseContext } from "~/db/context";
 import { organizationMembership } from "~/db/schema";
+import * as schema from "./app/db/schema";
 
 type HonoEnv = {
   Bindings: Env;
@@ -23,45 +24,7 @@ let handler: RequestHandler | undefined;
 
 app.use(poweredBy());
 
-// NOTE: Sequence of using middleware is important,
-// const dbContextMiddleware = ;
-const dbContextMiddleware = createMiddleware<HonoEnv>(async (c, next) => {
-  c.set("db", drizzle(c.env.DB));
-  return await next();
-});
-
-app.use("*", async (c, next) => {
-  return await dbContextMiddleware(c, next);
-});
-
 app.use(authMiddleware);
-
-app.use("organizations/:organizationId/:role", async (c, next) => {
-  const { organizationId, role } = c.req.param();
-  const db = c.var.db;
-  const user = c.var.user;
-
-  if (!db || !user) {
-    return c.redirect("/signin");
-  }
-  const membership = await db
-    .select()
-    .from(organizationMembership)
-    .where(
-      and(
-        eq(organizationMembership.userId, user.id),
-        eq(organizationMembership.organizationId, organizationId),
-        eq(organizationMembership.role, role)
-      )
-    )
-    .execute();
-
-  if (membership.length === 0) {
-    throw new Error(`Unauthorized: User is not ${role} of this organization`);
-  }
-
-  return next();
-});
 
 app.use(
   async (c, next) => {
@@ -104,9 +67,38 @@ app.use(
         },
       } as unknown as AppLoadContext;
 
-      return handler(c.req.raw, remixContext);
+      const db = drizzle(c.env.DB, { schema });
+
+      return DatabaseContext.run(db, () => handler!(c.req.raw, remixContext));
     }
   }
 );
+
+app.use("organizations/:organizationId/:role", async (c, next) => {
+  const { organizationId, role } = c.req.param();
+  const db = database();
+  const user = c.var.user;
+
+  if (!user) {
+    return c.redirect("/signin");
+  }
+  const membership = await db
+    .select()
+    .from(organizationMembership)
+    .where(
+      and(
+        eq(organizationMembership.userId, user.id),
+        eq(organizationMembership.organizationId, organizationId),
+        eq(organizationMembership.role, role)
+      )
+    )
+    .execute();
+
+  if (membership.length === 0) {
+    throw new Error(`Unauthorized: User is not ${role} of this organization`);
+  }
+
+  return next();
+});
 
 export default app;

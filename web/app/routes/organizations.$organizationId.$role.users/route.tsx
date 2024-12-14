@@ -2,11 +2,9 @@ import { and, desc, eq, not } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
 import { Ban, DoorOpen } from "lucide-react";
 import {
-  LoaderFunctionArgs,
-  redirect,
   useLoaderData,
   useParams,
-  useRevalidator,
+  useRevalidator
 } from "react-router";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
@@ -18,9 +16,11 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { database } from "~/db/context";
 import { organizationMembership, user } from "~/db/schema";
 import { admin } from "~/lib/auth.client";
 import { getAuth } from "~/lib/auth.server";
+import type { Route } from "./+types/route";
 import { InviteOrgMember } from "./invite-org-member";
 
 const selectUserSchema = createSelectSchema(user);
@@ -39,13 +39,10 @@ type LoaderData = {
   }[];
 };
 
-export async function loader({ context, params, request }: LoaderFunctionArgs) {
-  const { db, user: currentUser } = context.cloudflare.var;
+export async function loader({ context, params, request }: Route.LoaderArgs) {
+  const { user: currentUser } = context.cloudflare.var;
   const { organizationId, role } = params;
 
-  if (!currentUser || !db || !organizationId) {
-    return redirect("/signin");
-  }
   const auth = getAuth(context.cloudflare.env as Env);
   const invitePermissionCheck = await auth.api.hasPermission({
     headers: request.headers,
@@ -70,6 +67,7 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
     },
   });
   // Get all users in the organization with their member details
+  const db = database();
   const users = await db
     .select()
     .from(user)

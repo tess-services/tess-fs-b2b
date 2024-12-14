@@ -2,20 +2,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { eq } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { FieldErrors } from "react-hook-form";
-import { ActionFunctionArgs, LoaderFunctionArgs, useActionData, useNavigate, useParams } from "react-router";
+import { useActionData, useNavigate, useParams } from "react-router";
 import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { z } from "zod";
 import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
 
+import { database } from "~/db/context";
 import { customerTable, organizationMembership } from "~/db/schema";
 import { getAuth } from "~/lib/auth.server";
+import type { Route } from "./+types/organizations.$organizationId.$role.customer.new";
 
 const insertCustomerSchema = createInsertSchema(customerTable, {
-  createdAt: z.date({ coerce: true }),
-  updatedAt: z.date({ coerce: true }),
-  addedByUserId: z.undefined(),
-  organizationId: z.undefined(),
+  // createdAt: z.date({ coerce: true }),
+  // updatedAt: z.date({ coerce: true }),
+  // addedByUserId: z.undefined(),
+  // organizationId: z.undefined(),
 });
 
 const resolver = zodResolver(insertCustomerSchema);
@@ -28,18 +30,11 @@ export type ActionData = {
   errors?: FieldErrors<CustomerFormType>;
 };
 
-export async function loader({ context, params, request }: LoaderFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
-  const { organizationId, role } = params;
-  if (!organizationId || !role) {
-    throw new Error("Organization ID and role are required");
-  }
+export async function loader({ context, params, request }: Route.LoaderArgs) {
+  const { role } = params;
 
   const auth = getAuth(context.cloudflare.env as Env);
+
   const customerCreatePermission = await auth.api.hasPermission({
     headers: request.headers,
     body: {
@@ -51,6 +46,7 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
       },
     },
   });
+
   if (!customerCreatePermission.success) {
     throw new Error("Unauthorized");
   }
@@ -58,12 +54,8 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
   return Response.json({ success: true });
 }
 
-export async function action({ request, context }: ActionFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
+export async function action({ request, context }: Route.ActionArgs) {
+  const { user } = context.cloudflare.var;
 
   const { errors, data } = await getValidatedFormData<CustomerFormType>(
     request,
@@ -76,10 +68,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
   }
 
   try {
+    const db = database();
     const userOrgs = await db
       .select()
       .from(organizationMembership)
-      .where(eq(organizationMembership.userId, user.id))
+      .where(eq(organizationMembership.userId, user!.id))
       .execute();
 
     if (userOrgs.length === 0) {
@@ -93,7 +86,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       .values({
         ...data,
         organizationId: userOrg.organizationId,
-        addedByUserId: user.id,
+        addedByUserId: user!.id,
       })
       .returning();
 

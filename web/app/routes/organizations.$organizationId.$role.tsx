@@ -1,36 +1,29 @@
-import { LoaderFunctionArgs } from "react-router";
-import { Outlet, useLoaderData, useParams } from "react-router";
 import { and, eq } from "drizzle-orm";
 import { useEffect } from "react";
+import { Outlet, useLoaderData, useParams } from "react-router";
 import { TessMenuBar } from "~/components/TessMenuBar";
-import { user, organizationMembership, organizationTable } from "~/db/schema";
+import { database } from "~/db/context";
+import { organizationMembership, organizationTable, user } from "~/db/schema";
 import { setUserSession } from "~/lib/localStorageManager";
 import { OrgRoles } from "~/lib/permissions";
+import { Route } from "./+types/organizations.$organizationId.$role";
 
-export async function loader({ params, context }: LoaderFunctionArgs) {
-  const { db, user: currentUser } = context.cloudflare.var;
-
-  if (!currentUser || !db) {
-    throw new Error("Unauthorized");
-  }
-
+export async function loader({ params, context }: Route.LoaderArgs) {
   const { organizationId, role } = params;
-
-  if (!organizationId || !role) {
-    throw new Error("Organization ID and role are required");
-  }
+  const db = database();
+  const { user: currentUser } = context.cloudflare.var;
 
   const userOrgMemberMap = await db
     .select()
     .from(organizationMembership)
-    .innerJoin(user, eq(organizationMembership.userId, currentUser.id))
+    .innerJoin(user, eq(organizationMembership.userId, currentUser!.id))
     .innerJoin(
       organizationTable,
       eq(organizationMembership.organizationId, organizationTable.id)
     )
     .where(
       and(
-        eq(user.id, currentUser.id),
+        eq(user.id, currentUser!.id),
         eq(organizationMembership.organizationId, organizationId),
         eq(organizationMembership.role, role)
       )

@@ -1,7 +1,7 @@
 import { desc } from "drizzle-orm";
 import { sql } from "drizzle-orm/sql";
 import { Trash2Icon } from "lucide-react";
-import { Link, LoaderFunctionArgs, useLoaderData, useNavigate } from "react-router";
+import { Link, useLoaderData, useNavigate } from "react-router";
 import { z } from "zod";
 import { InviteOrgAdmin } from "~/components/invite-org-admin";
 import { Button } from "~/components/ui/button";
@@ -13,19 +13,17 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { database } from "~/db/context";
 import { organizationMembership, organizationTable } from "~/db/schema";
 import { selectOrganizationSchema } from "~/lib/organization";
+import type { Route } from "./+types/superadmin.organizations";
 
 type OrganizationRow = z.infer<typeof selectOrganizationSchema> & {
   hasOwner: boolean;
 };
 
-export async function loader({ context }: LoaderFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
+export async function loader({ context }: Route.LoaderArgs) {
+  const db = database();
 
   const organizations = await db
     .select({

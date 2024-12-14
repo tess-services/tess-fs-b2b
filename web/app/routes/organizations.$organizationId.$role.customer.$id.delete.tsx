@@ -1,20 +1,17 @@
 // implement Remix action to delete customer by id given in params argument
-import { ActionFunctionArgs, redirect } from "react-router";
 import { and, eq } from "drizzle-orm";
+import { redirect } from "react-router";
+import { database } from "~/db/context";
 import { customerTable } from "~/db/schema";
 import { getAuth } from "~/lib/auth.server";
+import type { Route } from "./+types/organizations.$organizationId.$role.customer.$id.delete";
 
 export const action = async ({
   params,
   context,
   request,
-}: ActionFunctionArgs) => {
-  const { db, user } = context.cloudflare.var;
+}: Route.ActionArgs) => {
   const auth = getAuth(context.cloudflare.env as Env);
-
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
 
   const { organizationId, role, id } = params;
 
@@ -40,6 +37,7 @@ export const action = async ({
   }
 
   // db1 of cloudflare does not support SQL transactions. https://github.com/drizzle-team/drizzle-orm/issues/2463 & https://blog.cloudflare.com/whats-new-with-d1/
+  const db = database();
 
   await db
     .delete(customerTable)

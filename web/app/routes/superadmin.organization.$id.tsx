@@ -1,11 +1,13 @@
 import { eq } from "drizzle-orm";
 import { FieldErrors } from "react-hook-form";
-import { ActionFunctionArgs, LoaderFunctionArgs, useActionData, useLoaderData, useNavigate } from "react-router";
+import { useActionData, useLoaderData, useNavigate } from "react-router";
 import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { OrganizationForm } from "~/components/organization-form";
+import { database } from "~/db/context";
 import { imageFileMetadata, organizationTable } from "~/db/schema";
 import { useToast } from "~/hooks/use-toast";
 import { OrganizationFormType, resolver } from "~/lib/organization";
+import type { Route } from "./+types/superadmin.organization.$id";
 
 export type ActionData = {
   success?: boolean;
@@ -13,18 +15,10 @@ export type ActionData = {
   errors?: FieldErrors<OrganizationFormType>;
 };
 
-export async function loader({ params, context }: LoaderFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-
-  if (!db || !user) {
-    throw new Error("Unauthorized");
-  }
-
+export async function loader({ params, context }: Route.LoaderArgs) {
   const { id } = params;
-  if (!id) {
-    throw new Error("Organization ID is required");
-  }
 
+  const db = database();
   const organizations = await db
     .select()
     .from(organizationTable)
@@ -45,13 +39,8 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   };
 }
 
-export async function action({ params, request, context }: ActionFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
+export async function action({ params, request, context }: Route.ActionArgs) {
   const { id } = params;
-
-  if (!user || !db || !id) {
-    throw new Error("Unauthorized or Invalid ID");
-  }
 
   const { errors, data } = await getValidatedFormData<OrganizationFormType>(
     request,
@@ -64,6 +53,7 @@ export async function action({ params, request, context }: ActionFunctionArgs) {
   }
 
   try {
+    const db = database();
     // Update organization
     await db
       .update(organizationTable)
@@ -116,6 +106,7 @@ export default function EditOrganization() {
     navigate("/superadmin/organizations")
   }
 
+  console.log("formstate erros ", form.formState.errors);
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">

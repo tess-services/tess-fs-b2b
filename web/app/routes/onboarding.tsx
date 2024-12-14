@@ -1,21 +1,22 @@
-import { redirectDocument, type LoaderFunctionArgs } from "react-router";
-import { useLoaderData, useNavigate } from "react-router";
 import { and, eq } from "drizzle-orm";
+import { createSelectSchema } from "drizzle-zod";
+import { useState } from "react";
+import { redirectDocument, useLoaderData, useNavigate } from "react-router";
+import { z } from "zod";
+import { CenterScreenContainer } from "~/components/CenterScreenContainer";
+import { Spinner } from "~/components/Spinner";
+import { TessMenuBar } from "~/components/TessMenuBar";
+import { database } from "~/db/context";
 import {
   invitation,
   organizationMembership,
   organizationTable,
   user,
 } from "~/db/schema";
-import { z } from "zod";
-import { createSelectSchema } from "drizzle-zod";
-import { CenterScreenContainer } from "~/components/CenterScreenContainer";
 import { organization } from "~/lib/auth.client";
-import { useState } from "react";
-import { Spinner } from "~/components/Spinner";
 import { getAuth } from "~/lib/auth.server";
-import { TessMenuBar } from "~/components/TessMenuBar";
 import { organizationMetadataSchema } from "~/lib/organization";
+import type { Route } from "./+types/onboarding";
 
 const pendingInvitationsSchema = z.array(
   z.object({
@@ -28,12 +29,14 @@ const pendingInvitationsSchema = z.array(
 );
 type PendingInvitations = z.infer<typeof pendingInvitationsSchema>;
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const { db, user: currentUser } = context.cloudflare.var;
-  if (!currentUser || !db) {
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const { user: currentUser } = context.cloudflare.var;
+
+  if (!currentUser) {
     throw new Error("Unauthorized");
   }
 
+  const db = database();
   const memberships = await db
     .select()
     .from(organizationMembership)
@@ -172,11 +175,10 @@ export default function Onboarding() {
                       <button
                         type="submit"
                         disabled={formState === "RequestInProgress"}
-                        className={`rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm ${
-                          formState === "RequestInProgress"
-                            ? "bg-blue-400 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-500"
-                        } flex items-center gap-2`}
+                        className={`rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm ${formState === "RequestInProgress"
+                          ? "bg-blue-400 cursor-not-allowed"
+                          : "bg-blue-600 hover:bg-blue-500"
+                          } flex items-center gap-2`}
                       >
                         {formState === "RequestInProgress" ? (
                           <>

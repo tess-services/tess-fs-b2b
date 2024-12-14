@@ -1,19 +1,18 @@
 import { parseFormData } from "@mjackson/form-data-parser";
 import { nanoid } from "nanoid";
-import { ActionFunctionArgs } from "react-router";
+import { database } from "~/db/context";
 import { imageFileMetadata } from "~/db/schema";
 import { cfImageUploadHandler } from "~/lib/cfImageUploadHandler.server";
+import type { Route } from "./+types/superadmin.organization.$id.image";
 
 export const action = async ({
   params,
   request,
   context,
-}: ActionFunctionArgs) => {
-  const { db, user } = context.cloudflare.var;
+}: Route.ActionArgs) => {
+  const { user } = context.cloudflare.var;
+  const db = database();
 
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
   const formData = await parseFormData(
     request,
     cfImageUploadHandler(
@@ -25,7 +24,11 @@ export const action = async ({
 
   const { id } = params;
   const fileId = nanoid();
-  const imageUrl = formData.get("logo");
+  const imageUrl = formData.get("logo") as string;
+
+  if (!imageUrl) {
+    throw new Error("No image uploaded");
+  }
 
   try {
     await db
@@ -34,7 +37,7 @@ export const action = async ({
         id: fileId,
         name: "logo",
         imageUrl,
-        uploadedByUserId: user.id,
+        uploadedByUserId: user!.id,
         imageCategory: "logo",
         organizationId: id,
         attachedEntityId: id,

@@ -1,15 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { useActionData, useLoaderData, useNavigate } from "react-router";
 import { and, eq } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { FieldErrors } from "react-hook-form";
+import { useActionData, useLoaderData, useNavigate } from "react-router";
 import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { z } from "zod";
 import { CustomerForm } from "~/components/customer-form";
 import { Button } from "~/components/ui/button";
+import { database } from "~/db/context";
 import { customerTable, organizationMembership } from "~/db/schema";
 import { getAuth } from "~/lib/auth.server";
+import type { Route } from "./+types/organizations.$organizationId.$role.customer.$id";
 
 const updateCustomerSchema = createInsertSchema(customerTable).omit({
   id: true,
@@ -29,13 +30,8 @@ export type ActionData = {
   errors?: FieldErrors<CustomerFormType>;
 };
 
-export async function loader({ params, context, request }: LoaderFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-  const auth = getAuth(context.cloudflare.env as Env);
-
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
+export async function loader({ params, context, request }: Route.LoaderArgs) {
+  const auth = getAuth(context.cloudflare.env);
 
   const { organizationId, role, id } = params;
 
@@ -60,6 +56,7 @@ export async function loader({ params, context, request }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
 
+  const db = database();
   // Get customer data
   const customers = await db
     .select()
@@ -82,11 +79,10 @@ export async function loader({ params, context, request }: LoaderFunctionArgs) {
   });
 }
 
-export async function action({ params, request, context }: ActionFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
+export async function action({ params, request, context }: Route.ActionArgs) {
   const { id } = params;
 
-  if (!user || !db || !id) {
+  if (!id) {
     throw new Error("Unauthorized or Invalid ID");
   }
 
@@ -101,16 +97,14 @@ export async function action({ params, request, context }: ActionFunctionArgs) {
   }
 
   try {
-    // Verify user has access to this customer via organization
+    const db = database();
+    const { user } = context.cloudflare.var;
+
     const userOrg = await db
       .select()
       .from(organizationMembership)
-      .where(eq(organizationMembership.userId, user.id))
+      .where(eq(organizationMembership.userId, user!.id))
       .execute();
-
-    if (userOrg.length === 0) {
-      throw new Error("User has no org assigned");
-    }
 
     // Update customer
     await db

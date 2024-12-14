@@ -1,13 +1,15 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { FieldErrors } from "react-hook-form";
-import { ActionFunctionArgs, type LoaderFunctionArgs, useActionData, useNavigate } from "react-router";
+import { useActionData, useNavigate } from "react-router";
 import { getValidatedFormData, useRemixForm } from "remix-hook-form";
 import { OrganizationForm } from "~/components/organization-form";
 import { Button } from "~/components/ui/button";
+import { database } from "~/db/context";
 import { organizationTable } from "~/db/schema";
 import { getAuth } from "~/lib/auth.server";
 import { OrganizationFormType, resolver } from "~/lib/organization";
+import type { Route } from "./+types/superadmin.organization.new";
 
 
 export type ActionData = {
@@ -16,24 +18,17 @@ export type ActionData = {
   errors?: FieldErrors<OrganizationFormType>;
 };
 
-export async function loader({ context }: LoaderFunctionArgs) {
-  const { user } = context.cloudflare.var;
+// export async function loader({ context }: Route.LoaderArgs) {
+//   const { user } = context.cloudflare.var;
 
-  if (!user) {
-    throw new Error("Unauthorized");
-  }
+//   if (!user) {
+//     throw new Error("Unauthorized");
+//   }
 
-  return null;
-}
+//   return null;
+// }
 
-export async function action({ context, request }: ActionFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
-
-
+export async function action({ context, request }: Route.ActionArgs) {
   const { errors, data } = await getValidatedFormData<OrganizationFormType>(request, resolver, false);
 
   if (errors) {
@@ -43,12 +38,12 @@ export async function action({ context, request }: ActionFunctionArgs) {
   if (data) {
     try {
       const { metadata, ...dataWithoutMetadata } = data;
-      const auth = getAuth(context);
+      const auth = getAuth(context.cloudflare.env);
       await auth.api.createOrganization({
         headers: request.headers,
         body: dataWithoutMetadata
       });
-
+      const db = database();
       await db.update(organizationTable).set({ metadata }).where(eq(organizationTable.id, dataWithoutMetadata.id));
 
       return Response.json({ success: true });

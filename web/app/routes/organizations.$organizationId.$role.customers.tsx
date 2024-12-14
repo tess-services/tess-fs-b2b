@@ -1,8 +1,7 @@
-import { LoaderFunctionArgs } from "react-router";
-import { Link, useLoaderData, useNavigate } from "react-router";
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
 import { Trash2Icon } from "lucide-react";
+import { Link, useLoaderData, useNavigate } from "react-router";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
@@ -13,19 +12,17 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { customerTable, organizationMembership } from "~/db/schema";
+import { database } from "~/db/context";
+import { customerTable } from "~/db/schema";
 import { getAuth } from "~/lib/auth.server";
+import { Route } from "./+types/organizations.$organizationId.$role.customers";
 
 const selectCustomerSchema = createSelectSchema(customerTable);
 
 type CustomerTable = z.infer<typeof selectCustomerSchema>;
 
-export async function loader({ context, params, request }: LoaderFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
-  const auth = getAuth(context.cloudflare.env as Env);
-  if (!user || !db) {
-    throw new Error("Unauthorized");
-  }
+export async function loader({ context, params, request }: Route.LoaderArgs) {
+  const auth = getAuth(context.cloudflare.env);
 
   const { organizationId, role } = params;
   if (!organizationId || !role) {
@@ -50,6 +47,7 @@ export async function loader({ context, params, request }: LoaderFunctionArgs) {
   }
 
   // Then get customers for that organization
+  const db = database();
   const customers = await db
     .select()
     .from(customerTable)

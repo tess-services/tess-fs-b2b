@@ -1,15 +1,14 @@
+import { Menu, UserCircle } from "lucide-react";
+import { useState } from "react";
+import { NavLink, Outlet } from "react-router";
+import { ModeToggle } from "~/components/mode-toggle";
+import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { LoaderFunctionArgs } from "react-router";
-import { NavLink, Outlet } from "react-router";
-import { Menu, UserCircle } from "lucide-react";
-import { useState } from "react";
-import { ModeToggle } from "~/components/mode-toggle";
-import { Button } from "~/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -17,16 +16,16 @@ import {
 } from "~/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 import { isSuperAdmin } from "~/lib/isSuperAdmin";
+import type { Route } from "./+types/superadmin";
 
 const isMenuActive = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-2 text-sm font-medium relative ${
-    isActive ? "border-b-2 border-b-indigo-500 " : "text-muted-foreground"
+  `px-3 py-2 text-sm font-medium relative ${isActive ? "border-b-2 border-b-indigo-500 " : "text-muted-foreground"
   }`;
 
-export async function loader({ context }: LoaderFunctionArgs) {
-  const { db, user } = context.cloudflare.var;
+export async function loader({ context }: Route.LoaderArgs) {
+  const { user } = context.cloudflare.var;
 
-  if (!user || !db || !isSuperAdmin(user.role)) {
+  if (!user || !isSuperAdmin(user.role)) {
     throw new Error("Unauthorized");
   }
 
