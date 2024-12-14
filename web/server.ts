@@ -36,22 +36,22 @@ app.use(
   async (c, next) => {
     if (process.env.NODE_ENV !== "development" || import.meta.env.PROD) {
       const serverBuild = await import("./build/server");
-      const db = drizzle(c.env.DB, { schema });
 
-      return DatabaseContext.run(db, () => reactRouter({
+      return reactRouter({
         build: serverBuild as unknown as ServerBuild,
         mode: "production",
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         getLoadContext(c) {
-          return {
+          const db = drizzle(c.env.DB, { schema });
+          return DatabaseContext.run(db, () => ({
             cloudflare: {
               env: c.env,
               var: c.var,
             },
-          };
+          }));
         },
-      })(c, next));
+      })(c, next);
     } else {
       if (!handler) {
         // @ts-expect-error it's not typed
