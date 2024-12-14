@@ -36,7 +36,7 @@ app.use(async (c, next) => {
     return DatabaseContext.run(db, async () => {
       try {
         console.log("===> DatabaseContext set");
-        return await next();
+        next();
       } catch (error) {
         console.error('Database error:', error);
         throw error;
