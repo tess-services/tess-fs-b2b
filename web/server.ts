@@ -3,18 +3,21 @@ import { UserWithRole } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
 import { drizzle, DrizzleD1Database } from "drizzle-orm/d1";
 import { Hono } from "hono";
+import { contextStorage } from 'hono/context-storage';
 import { poweredBy } from "hono/powered-by";
 import type { AppLoadContext, RequestHandler, ServerBuild } from "react-router";
 import { staticAssets } from "remix-hono/cloudflare";
 import { reactRouter } from "remix-hono/handler";
-import { database, DatabaseContext } from "~/db/context";
+import { database } from "~/db/context";
 import { organizationMembership } from "~/db/schema";
 import * as schema from "./app/db/schema";
 
-type HonoEnv = {
+export type HonoEnv = {
   Bindings: Env;
   Variables: {
-    db: DrizzleD1Database;
+    db: DrizzleD1Database<typeof schema> & {
+      $client: D1Database;
+    };
     user: UserWithRole;
   };
 };
@@ -26,26 +29,15 @@ app.use(poweredBy());
 
 app.use(authMiddleware);
 
+app.use(contextStorage())
+
 // Single DB middleware
 app.use(async (c, next) => {
-  try {
-    console.log("trying ot set DatabaseContext ========");
+  const db = drizzle(c.env.DB, { schema });
 
-    const db = drizzle(c.env.DB, { schema });
+  c.set('db', db);
 
-    return DatabaseContext.run(db, async () => {
-      try {
-        console.log("===> DatabaseContext set");
-        return await next();
-      } catch (error) {
-        console.error('Database error:', error);
-        throw error;
-      }
-    });
-  } catch (error) {
-    console.error('error in create database context Database error:', error);
-    throw error;
-  }
+  await next();
 });
 
 // Static assets middleware

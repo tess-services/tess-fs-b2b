@@ -1,7 +1,8 @@
+import type { DrizzleD1Database } from "drizzle-orm/d1";
+import { getContext } from 'hono/context-storage';
 import { AsyncLocalStorage } from "node:async_hooks";
 
-import type { DrizzleD1Database } from "drizzle-orm/d1";
-
+import { HonoEnv } from "server";
 import * as schema from "./schema";
 
 export const DatabaseContext = new AsyncLocalStorage<
@@ -9,7 +10,7 @@ export const DatabaseContext = new AsyncLocalStorage<
 >();
 
 export function database() {
-  const db = DatabaseContext.getStore();
+  const db = getContext<HonoEnv>().var.db;
 
   if (!db) {
     console.trace();
