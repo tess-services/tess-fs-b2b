@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { createSelectSchema } from "drizzle-zod";
-import { useState } from "react";
-import { redirectDocument, useLoaderData, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { redirectDocument, useLoaderData, useNavigate, useSearchParams } from "react-router";
 import { z } from "zod";
 import { CenterScreenContainer } from "~/components/CenterScreenContainer";
 import { Spinner } from "~/components/Spinner";
@@ -34,6 +34,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
   if (!currentUser) {
     throw new Error("Unauthorized");
+  }
+
+  if (currentUser.role === "admin") {
+    return redirectDocument("/superadmin/organizations");
   }
 
   const db = database();
@@ -100,6 +104,41 @@ export default function Onboarding() {
   const [formState, setFormState] = useState<FormState>("Onboarding");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (organization && searchParams.has("email") && searchParams.has("invitationid") && pendingInvitations.length === 1) {
+
+      const emailParam = searchParams.get("email");
+      const invitationIdParam = searchParams.get("invitationid");
+
+      if (emailParam && invitationIdParam) {
+        const invitationId = invitationIdParam;
+        const role = "member";
+
+        // Handle invitation acceptance
+        organization.acceptInvitation(
+          { invitationId },
+          {
+            onRequest: (ctx) => {
+              setFormState("RequestInProgress");
+            },
+            onSuccess: (ctx) => {
+              setFormState("RequestSuccess");
+              var organizationId = pendingInvitations[0].organization.id;
+              navigate(`/organizations/${organizationId}/${role}`);
+            },
+            onError: (ctx) => {
+              setFormState("RequestFailed");
+              if (ctx.error.message) {
+                setError(ctx.error.message);
+              }
+            },
+          }
+        );
+      }
+    }
+  }, [organization, searchParams, pendingInvitations]);
 
   const handleAcceptInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
